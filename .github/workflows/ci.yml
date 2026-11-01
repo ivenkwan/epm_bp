@@ -1,0 +1,136 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21.0.13+9"
+          cache: maven
+
+      - name: Set up pnpm 12.9.1
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.9.1
+          run_install: false
+
+      - name: Set up Node.js 24.13.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.13.0
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install security and SBOM tools
+        shell: bash
+        env:
+          TRIVY_VERSION: 0.70.0
+          GITLEAKS_VERSION: 8.30.1
+          SYFT_VERSION: 1.55.0
+        run: |
+          set -euo pipefail
+          tools="$RUNNER_TEMP/toolchain-tools"
+          mkdir -p "$tools/bin"
+          curl -fsSL "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz" -o "$tools/trivy.tar.gz"
+          curl -fsSL "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_checksums.txt" -o "$tools/trivy-checksums.txt"
+          (cd "$tools" && awk '/trivy_0.70.0_Linux-64bit.tar.gz$/ { print $1 "  trivy.tar.gz" }' trivy-checksums.txt | sha256sum -c -)
+          tar -xzf "$tools/trivy.tar.gz" -C "$tools" trivy
+          install -m 0755 "$tools/trivy" "$tools/bin/trivy"
+          curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" -o "$tools/gitleaks.tar.gz"
+          curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_checksums.txt" -o "$tools/gitleaks-checksums.txt"
+          (cd "$tools" && awk '/gitleaks_8.30.1_linux_x64.tar.gz$/ { print $1 "  gitleaks.tar.gz" }' gitleaks-checksums.txt | sha256sum -c -)
+          tar -xzf "$tools/gitleaks.tar.gz" -C "$tools" gitleaks
+          install -m 0755 "$tools/gitleaks" "$tools/bin/gitleaks"
+          curl -fsSL "https://github.com/anchore/syft/releases/download/v${SYFT_VERSION}/syft_${SYFT_VERSION}_linux_amd64.tar.gz" -o "$tools/syft.tar.gz"
+          curl -fsSL "https://github.com/anchore/syft/releases/download/v${SYFT_VERSION}/syft_${SYFT_VERSION}_checksums.txt" -o "$tools/syft-checksums.txt"
+          (cd "$tools" && awk '/syft_1.55.0_linux_amd64.tar.gz$/ { print $1 "  syft.tar.gz" }' syft-checksums.txt | sha256sum -c -)
+          tar -xzf "$tools/syft.tar.gz" -C "$tools" syft
+          install -m 0755 "$tools/syft" "$tools/bin/syft"
+          echo "$tools/bin" >> "$GITHUB_PATH"
+
+      - name: Install frozen workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify Maven reactor and compatibility
+        run: ./mvnw -B -ntp verify
+
+      - name: Typecheck web application
+        run: pnpm --dir apps/finance-web run typecheck
+
+      - name: Lint and check formatting
+        run: pnpm --dir apps/finance-web run lint
+
+      - name: Test web application
+        run: pnpm --dir apps/finance-web run test
+
+      - name: Build web application
+        run: pnpm --dir apps/finance-web run build
+
+      - name: Verify browser-test package
+        run: |
+          pnpm --dir tests/e2e run typecheck
+          pnpm --dir tests/e2e run test
+
+      - name: Record Maven dependency graph
+        run: ./mvnw -B -ntp -DskipTests -Dstyle.color=never dependency:tree > target/maven-dependency-tree.txt
+
+      - name: Verify current build contracts
+        run: ./scripts/quality/verify-contracts.sh
+
+      - name: Verify current DRL and DMN behavior
+        run: ./scripts/quality/verify-rules.sh
+
+      - name: Verify requirements traceability
+        run: ./scripts/quality/verify-traceability.sh
+
+      - name: Verify provenance and generate SBOM
+        run: ./scripts/quality/verify-provenance.sh
+
+      - name: Block high and critical dependency or secret findings
+        run: ./scripts/quality/verify-security.sh
+
+      - name: Reject post-build source or generated drift
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          git diff --cached --exit-code
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+      - name: Upload build evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: toolchain-evidence
+          path: |
+            target/bom.json
+            target/workspace-bom.json
+            target/provenance.json
+            target/maven-dependency-tree.txt
+            **/target/surefire-reports/**
+          if-no-files-found: error
+
+      - name: Attest workspace SBOM provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: target/workspace-bom.json

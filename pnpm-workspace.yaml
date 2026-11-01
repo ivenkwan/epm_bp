@@ -1,0 +1,7 @@
+packages:
+  - "apps/finance-web"
+  - "tests/e2e"
+
+allowBuilds:
+  esbuild: true
+  libxmljs2: true

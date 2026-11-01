@@ -1,0 +1,13 @@
+{
+  "name": "finance-platform",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@12.9.1",
+  "engines": {
+    "node": "24.13.0",
+    "pnpm": "12.9.1"
+  },
+  "scripts": {
+    "sbom": "syft dir:. --exclude \"./.superpowers/**\" --exclude \"./**/target/**\" --exclude \"./**/node_modules/**\" --exclude \"./**/dist/**\" --exclude \"./**/build/**\" --exclude \"./**/coverage/**\" -o cyclonedx-json=target/workspace-bom.json"
+  }
+}

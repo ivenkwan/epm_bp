@@ -139,11 +139,11 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-040, NFR-002, NFR-028, NFR-035; depends on Task 1.
 
-- [ ] In a clean compatibility spike, verify the selected Java LTS, Quarkus, Kogito, Drools/DMN, PostgreSQL, AGE, APISIX, Node.js LTS, React/Vite, and TypeScript combinations. Record exact versions, image digests, supported platforms, and upgrade constraints in `version-matrix.md`; reject any unsupported combination before scaffolding.
-- [ ] Create a Maven reactor for the five services and a pnpm workspace for the web and browser-test packages. Configure compiler warnings as errors, strict TypeScript, formatting, linting, unit tests, dependency scanning, secret scanning, SBOM generation, and build provenance.
-- [ ] Write `ToolchainCompatibilityTest` to prove PostgreSQL connectivity, AGE extension loading, a terminating Drools rule, one DMN evaluation, and a persisted Kogito process can run with the locked versions. Run it before and after version locking.
-- [ ] Configure CI to run the standard regression commands, verify lockfiles and generated sources are current, publish SBOM/test evidence, and block release on critical/high findings without an authorized exception.
-- [ ] Clone into a clean temporary directory and run `./mvnw verify`, `pnpm install --frozen-lockfile`, and `./scripts/quality/verify-provenance.sh`; expect reproducible success with no undocumented manual setup.
+- [x] In a clean compatibility spike, verify the selected Java LTS, Quarkus, Kogito, Drools/DMN, PostgreSQL, AGE, APISIX, Node.js LTS, React/Vite, and TypeScript combinations. Record exact versions, image digests, supported platforms, and upgrade constraints in `version-matrix.md`; reject any unsupported combination before scaffolding.
+- [x] Create a Maven reactor for the five services and a pnpm workspace for the web and browser-test packages. Configure compiler warnings as errors, strict TypeScript, formatting, linting, unit tests, dependency scanning, secret scanning, SBOM generation, and build provenance.
+- [x] Write `ToolchainCompatibilityTest` to prove PostgreSQL connectivity, AGE extension loading, a terminating Drools rule, one DMN evaluation, and a persisted Kogito process can run with the locked versions. Run it before and after version locking.
+- [x] Configure CI to run the standard regression commands, verify lockfiles and generated sources are current, publish SBOM/test evidence, and block release on critical/high findings without an authorized exception.
+- [x] Clone into a clean temporary directory and run `./mvnw verify`, `pnpm install --frozen-lockfile`, and `./scripts/quality/verify-provenance.sh`; expect reproducible success with no undocumented manual setup.
 
 **Done when:** Two clean checkouts produce the same locked dependency graph and green build, and CI blocks unreviewed provenance or security failures.  
 **Commit:** `build(foundation): add reproducible monorepo toolchain and ci`
