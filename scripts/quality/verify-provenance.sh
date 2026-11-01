@@ -70,6 +70,7 @@ required_inputs=(
   "$root_dir/tests/integration/toolchain/ToolchainCompatibilityTest.java"
   "$root_dir/.github/workflows/ci.yml"
   "$root_dir/.gitleaksignore"
+  "$root_dir/.gitleaks.toml"
   "$root_dir/.mvn/wrapper/maven-wrapper.properties"
   "$matrix_path"
 )

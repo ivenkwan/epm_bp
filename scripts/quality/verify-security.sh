@@ -17,7 +17,7 @@ trivy fs \
   --severity HIGH,CRITICAL \
   --include-dev-deps \
   --exit-code 1 \
-  --skip-dirs .git,.superpowers,node_modules,target,dist,build,coverage \
+  --skip-dirs .git,.worktrees,.superpowers,node_modules,target,dist,build,coverage \
   .
 gitleaks detect --source . --no-git --redact
 printf 'PASS: high/critical dependency and secret scans found no findings in current toolchain inputs\n'

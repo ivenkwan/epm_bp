@@ -76,7 +76,7 @@ These are narrow compatibility exceptions, not dynamic-version or snapshot permi
 
 ## Security exception register
 
-No dependency vulnerability exception is approved. Only the two PRD example UUIDs at lines 659 and 724 are excluded by exact fingerprint in `.gitleaksignore`; they are synthetic API examples, not credentials. No other secret or vulnerability finding is suppressed.
+No dependency vulnerability exception is approved. Only the two PRD example UUIDs at lines 659 and 724 are excluded by exact fingerprint in `.gitleaksignore`; they are synthetic API examples, not credentials. Linked worktrees and local agent scratch are outside current-checkout scans, not approved findings. No other secret or vulnerability finding is suppressed.
 
 ## Upgrade rules
 

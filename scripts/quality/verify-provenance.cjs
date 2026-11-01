@@ -65,6 +65,7 @@ if (!Array.isArray(mavenBom.components) || mavenBom.components.length === 0) {
 
 const inputFiles = [
   ".github/workflows/ci.yml",
+  ".gitleaks.toml",
   ".gitleaksignore",
   ".mvn/wrapper/maven-wrapper.properties",
   "apps/finance-web/package.json",
