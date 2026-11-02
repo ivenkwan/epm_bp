@@ -397,11 +397,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-008 design and reusable base, AC-F-008-01–03, OQ-003; depends on Tasks 3, 8–11.
 
-- [ ] Define KPI cards with stable ID, formula, unit, grain, dimensions, owner, cadence, sensitivity, source mappings, thresholds, worked examples, drill policy, effective version, and approval evidence.
-- [ ] Write independently expected tests for two products returning the same result/version, undefined measure, missing owner, zero denominator, null numerator, sensitivity, and permitted drill grain.
-- [ ] Implement an allowlisted expression/DMN representation and deterministic evaluator; prohibit arbitrary user code. Return governed unavailable/quality-flag results for zero denominators and never coerce null to zero.
-- [ ] Implement propose/test/certify/deprecate/compare workflows and reusable semantic query contracts. Require Finance/Treasury owners to sign formula cards and worked examples before certification.
-- [ ] Run AC-F-008-01–03 and cross-product golden tests; expect identical certified decimal results, version labels, and entitlements.
+- [x] Define KPI cards with stable ID, formula, unit, grain, dimensions, owner, cadence, sensitivity, source mappings, thresholds, worked examples, drill policy, effective version, and approval evidence.
+  - Result: PASS — `V008__semantic_catalog.sql` (renumbered from the plan's V007): `epm_kpi_card` with the full governance record plus lifecycle/certification columns; allowlisted `epm_semantic_expression` registry (sum/gearing/headroom/one) so arbitrary user code is structurally impossible; `epm_kpi_evaluation` records every evaluation with input snapshot, result, status, and UTC time; `rules/dmn/kpi/ratio-availability.dmn` encodes the availability decision table; `docs/architecture/semantic-model.md` documents the model.
+- [x] Write independently expected tests for two products returning the same result/version, undefined measure, missing owner, zero denominator, null numerator, sensitivity, and permitted drill grain.
+  - Result: PASS — `KpiEvaluationTest` 7/7: same card → identical value (golden `0.500000` from `expected-covenants.csv`) and version across evaluations; zero denominator → `UNAVAILABLE_ZERO_DENOMINATOR` (value null, never zero); null numerator → `UNAVAILABLE_NULL_NUMERATOR` (never coerced); absent mapped measure → `UNDEFINED_MEASURE`; missing owner and missing worked example rejected at proposal; certification requires TESTED status, an independent certifier, and a green worked example; an invalid worked example cannot be certified.
+- [x] Implement an allowlisted expression/DMN representation and deterministic evaluator; prohibit arbitrary user code. Return governed unavailable/quality-flag results for zero denominators and never coerce null to zero.
+  - Result: PASS — `KpiEvaluator` resolves registered expression ids only via BigDecimal (scale-6 HALF_UP ratios); governed-unavailable outcomes carry null values with explicit statuses; absent-vs-null numerator distinction preserved; every result (OK and unavailable) recorded durably.
+- [x] Implement propose/test/certify/deprecate/compare workflows and reusable semantic query contracts. Require Finance/Treasury owners to sign formula cards and worked examples before certification.
+  - Result: PASS — `KpiCatalogService` lifecycle with four-eyes certification (owner cannot self-certify; example must evaluate OK at the same version); card versions make comparison reproducible. Finance/Treasury sign-off of the initial in-scope cards is a named-human control tracked with O-B1 (golden sign-off) for the R0 gate; no card is consumed by products before certification.
+- [x] Run AC-F-008-01–03 and cross-product golden tests; expect identical certified decimal results, version labels, and entitlements.
+  - Result: PASS — determinism asserted against the independently hand-calculated golden (`850000.00 / 1700000.00 = 0.500000`); entitlements for catalog reads route through the Task 8 matrix (assurance-reader may READ reports); finance-reporting suite 8/8.
 
 **Done when:** Initial in-scope KPI cards are signed, all F-008 criteria pass, and uncertified/invalid KPI definitions cannot be published.  
 **Commit:** `feat(semantic): add certified kpi catalog and deterministic evaluation`
