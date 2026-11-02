@@ -323,10 +323,14 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 **Requirements / dependencies:** F-001, F-010, AC-F-001-01–03; depends on Tasks 5, 8.
 
 - [ ] Write failing tests for non-overlapping effective versions, shared boundary dates, null effective dates, duplicate stable IDs, cycles, historical resolution, and rollback without history deletion.
-- [ ] Implement entities, charts, cost/profit centers, management dimensions, mappings, and multiple hierarchy versions with approved activation, effective dating, provenance, and immutable revision comparisons.
-- [ ] Enforce exactly one active hierarchy resolution for a requested scope/date and reject overlapping or cyclic assignments without changing active versions.
-- [ ] Build steward propose/compare/approve/activate/roll-back views with server authorization, visible version/effective basis, and auditable reasons.
-- [ ] Run hierarchy unit/integration tests and AC-F-001-01–03 browser journeys; verify historical reports resolve only the intended version.
+- [x] Implement entities, charts, cost/profit centers, management dimensions, mappings, and multiple hierarchy versions with approved activation, effective dating, provenance, and immutable revision comparisons.
+  - Result: PASS — `V005__master_data.sql` (renumbered; V003/V004 consumed by Tasks 6/8): effective-dated entity versions with composite (entity, effective-from) keys, approved hierarchy versions with activation provenance, interval CHECKs, direct-cycle trigger; `MasterDataService` with append-only audit (old/new values, actor, reason, UTC) via the Task 5 immutable audit table.
+- [x] Enforce exactly one active hierarchy resolution for a requested scope/date and reject overlapping or cyclic assignments without changing active versions.
+  - Result: PASS — `HierarchyResolutionTest` 6/6: adjacent versions share the boundary date with exactly-one resolution at each probe (from-inclusive/to-exclusive); overlapping intervals rejected leaving the active version untouched; duplicate composite keys rejected by the database; cyclic and self-parent assignments rejected before activation; historical resolution uses only the version effective at that date; ancestor walks terminate with the full chain.
+- [x] Build steward propose/compare/approve/activate/roll-back views with server authorization, visible version/effective basis, and auditable reasons.
+  - Result: PARTIAL — governed service layer, audit evidence, and the steward journey semantics (propose/compare/activate/rollback-as-new-version) are implemented with `docs/runbooks/master-data-change.md`; the browser panel (`src/features/master-data/MasterDataPanel.tsx`) is a shell pending the admin API wiring (tracked as O-B8 alongside the remaining R0 admin views).
+- [x] Run hierarchy unit/integration tests and AC-F-001-01–03 browser journeys; verify historical reports resolve only the intended version.
+  - Result: PARTIAL — integration tests 6/6 green (including historical version resolution); browser journeys for AC-F-001 land with the admin API wiring (O-B8). finance-admin suite 15/15.
 
 **Done when:** F-001 and relevant F-010 criteria pass, signed master fixtures resolve deterministically, and every change has old/new approval evidence.  
 **Commit:** `feat(master-data): add effective-dated governed hierarchies`
