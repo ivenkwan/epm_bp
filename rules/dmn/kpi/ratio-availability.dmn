@@ -3,8 +3,26 @@
              xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/"
              xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/"
              id="kpi-registry" name="kpi-registry" namespace="https://epm.dev/rules/kpi">
+  <inputData id="numeratorPresentInput" name="numeratorPresent">
+    <variable id="numeratorPresentVar" name="numeratorPresent" typeRef="string"/>
+  </inputData>
+  <inputData id="denominatorPresentInput" name="denominatorPresent">
+    <variable id="denominatorPresentVar" name="denominatorPresent" typeRef="string"/>
+  </inputData>
+  <inputData id="denominatorZeroInput" name="denominatorZero">
+    <variable id="denominatorZeroVar" name="denominatorZero" typeRef="string"/>
+  </inputData>
   <decision id="ratioAvailability" name="Ratio Availability">
     <variable id="ratioAvailabilityVar" name="Ratio Availability" typeRef="string"/>
+    <informationRequirement id="reqNumerator">
+      <requiredInput href="#numeratorPresentInput"/>
+    </informationRequirement>
+    <informationRequirement id="reqDenominator">
+      <requiredInput href="#denominatorPresentInput"/>
+    </informationRequirement>
+    <informationRequirement id="reqZero">
+      <requiredInput href="#denominatorZeroInput"/>
+    </informationRequirement>
     <decisionTable id="ratioAvailabilityTable" hitPolicy="FIRST">
       <input id="numeratorPresent" label="Numerator present">
         <inputExpression id="numeratorPresentExpr" typeRef="string">
@@ -34,7 +52,7 @@
         <inputEntry id="rNullNumIn1"><text>"NULL"</text></inputEntry>
         <inputEntry id="rNullNumIn2"><text>"PRESENT"</text></inputEntry>
         <inputEntry id="rNullNumIn3"><text>-</text></inputEntry>
-        <outputEntry id="rNullNumOut"><text>"UNAVAILABLE_NULL_NUMERATOR"</text></inputEntry>
+        <outputEntry id="rNullNumOut"><text>"UNAVAILABLE_NULL_NUMERATOR"</text></outputEntry>
       </rule>
       <rule id="rZeroDenominator">
         <description>Zero denominators are governed-unavailable, never a breach value.</description>

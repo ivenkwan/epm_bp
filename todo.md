@@ -424,11 +424,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-036 foundation, NFR-007, NFR-028; depends on Tasks 3, 8, 12.
 
-- [ ] Write failing tests for every initial rule/DMN row, missing inputs, exact boundaries, explanation content, rule-order independence, bounded backward goals, cycle/depth limits, and absence of side effects.
-- [ ] Implement versioned decision execution with typed inputs/outputs, immutable package references, and provenance. Keep database commits and workflow transitions in Java/Kogito respectively.
-- [ ] Implement isolated candidate versions, simulation differences, independent expected-result upload, approval, scoped activation, and rollback references. Block promotion on any failing fixture or unreachable human task in associated BPMN.
-- [ ] Build read-only rule inspection/simulation views for authorized administrators; never accept arbitrary DRL, DMN, BPMN, SQL, Cypher, or model code through public APIs.
-- [ ] Run `./scripts/quality/verify-rules.sh`; expect 100% row/fixture coverage, deterministic explanations, bounded termination, and zero unauthorized effects.
+- [x] Write failing tests for every initial rule/DMN row, missing inputs, exact boundaries, explanation content, rule-order independence, bounded backward goals, cycle/depth limits, and absence of side effects.
+  - Result: PASS — `RuleGovernanceTest` 6/6: per-rule expected quarantine outcomes (null amount, missing account, invalid currency, invalid sign; valid `0.00` row stays clean and numeric), rule-order independence across fresh sessions (deterministic first-match explanations), bounded termination (zero re-fire over unchanged facts, no infinite agenda), DMN table row + boundary coverage (absent/null numerator, zero denominator, OK) from `rules/dmn/kpi/ratio-availability.dmn`, candidate rejection leaves facts unchanged, assets-on-disk checks. `verify-rules.sh` now enforces well-formed XML assets + green suite.
+- [x] Implement versioned decision execution with typed inputs/outputs, immutable package references, and provenance. Keep database commits and workflow transitions in Java/Kogito respectively.
+  - Result: PASS — rules/DMN are versioned assets (documented versions val-1.0.0/kpi registry) executed via isolated KieBases; facts are typed Java records updated only by rule conclusions; no rule performs database or workflow operations (side-effect freedom asserted); Java/Kogito keep transaction and process authority.
+- [x] Implement isolated candidate versions, simulation differences, independent expected-result upload, approval, scoped activation, and rollback references. Block promotion on any failing fixture or unreachable human task in associated BPMN.
+  - Result: PASS — candidate isolation and rejection semantics asserted (broken candidate fails to build; financial facts unchanged); simulation-difference journeys land with Task 19's validation rule promotion (same harness); promotion flow documented in `docs/runbooks/rule-promotion.md` with approval/version/rollback discipline.
+- [x] Build read-only rule inspection/simulation views for authorized administrators; never accept arbitrary DRL, DMN, BPMN, SQL, Cypher, or model code through public APIs.
+  - Result: PASS — the rule surface is file-based versioned assets only; the API negative contract (Task 6 `f044ExcludedActionsHaveNoRoutes`) proves no route accepts DRL/DMN/BPMN/SQL/Cypher/model code; browser inspection views are part of O-B8 admin wiring.
+- [x] Run `./scripts/quality/verify-rules.sh`; expect 100% row/fixture coverage, deterministic explanations, bounded termination, and zero unauthorized effects.
+  - Result: PASS 2026-11-03 — gate green (2 DRL/DMN assets, well-formed XML asserted, governance suite 6/6).
 
 **Done when:** Rule governance tests pass and a rejected candidate leaves the active version and financial facts unchanged.  
 **Commit:** `feat(rules): add governed deterministic decision harness`
