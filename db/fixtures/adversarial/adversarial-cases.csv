@@ -1,0 +1,13 @@
+case_id,category,description,payload_file,expected_outcome
+ADV001,NULL_VS_ZERO,Amount field is empty string distinct from literal 0.00,adv-null-vs-zero.csv,EMPTY_AMOUNT_QUARANTINED_ZERO_PRESERVED
+ADV002,EMPTY_EXTRACT,Zero-row extract must raise completeness exception not empty certified product,adv-empty-extract.csv,ZERO_ROWS_COMPLETENESS_EXCEPTION
+ADV003,DUPLICATE_NATURAL_KEY,Same natural key twice in one submission,adv-duplicate-natural-key.csv,DUPLICATE_QUARANTINED
+ADV004,NEGATIVE_OVERDRAFT,A negative balance on an authorized overdraft account is valid not an error,adv-negative-overdraft.csv,ACCEPTED_NEGATIVE_BALANCE
+ADV005,ZERO_DENOMINATOR,Covenant denominator is zero so ratio is invalid not zero,adv-zero-denominator.csv,COVENANT_STATUS_INVALID
+ADV006,EXACT_TOLERANCE,Difference exactly equals tolerance boundary,adv-exact-tolerance.csv,MATCHED_AT_EXACT_TOLERANCE
+ADV007,T0_BOUNDARY,Event at cutoff T0 is on-time and at T0+1s is late preserving original timestamp,adv-t0-boundary.csv,ORIGINAL_TIMESTAMP_PRESERVED
+ADV008,ADJACENT_EFFECTIVE_DATES,Version ends 2026-06-30 and next starts 2026-07-01 with no gap or overlap,adv-adjacent-effective-dates.csv,EXACTLY_ONE_VERSION_RESOLVES
+ADV009,STALE_ETAG,If-Match revision older than current revision,adv-stale-etag.csv,CONFLICT_409
+ADV010,DUPLICATE_EVENT,Outbox event redelivered with same event id,adv-duplicate-event.csv,EXACTLY_ONE_EFFECT
+ADV011,RESTRICTED_ENTITY,Row belongs to an entity outside the requester scope,adv-restricted-entity.csv,ZERO_ROWS_RETURNED_NO_LEAK
+ADV012,ROUNDING_RESIDUAL,Allocation leaves a residual that must be assigned not dropped,adv-rounding-residual.csv,RESIDUAL_ASSIGNED_TO_LARGEST_REMAINDER

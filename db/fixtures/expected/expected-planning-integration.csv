@@ -1,0 +1,3 @@
+entity_id,plan_version,assets_total,liabilities_total,equity_total,imbalance,status
+ENT101,BUDGET-2027,1250.00,0.00,5000.00,-3750.00,OPENING_IMBALANCE_CASE_OPENED
+ENT102,BUDGET-2027,450.00,0.00,2000.00,-1550.00,OPENING_IMBALANCE_CASE_OPENED

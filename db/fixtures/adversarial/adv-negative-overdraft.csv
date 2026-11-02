@@ -1,0 +1,3 @@
+balance_id,account_id,business_date,balance_type,amount,currency
+CBAL1,ACC004,2026-11-01,OPENING,-75.50,USD
+CBAL2,ACC004,2026-11-02,OPENING,-80.00,USD

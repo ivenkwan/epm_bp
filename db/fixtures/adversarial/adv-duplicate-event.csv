@@ -1,0 +1,3 @@
+event_id,aggregate_type,aggregate_id,event_type
+EEVT1,landing_batch,LB-001,BATCH_LANDED
+EEVT1,landing_batch,LB-001,BATCH_LANDED

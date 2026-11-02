@@ -165,11 +165,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** NFR-024, NFR-028, NFR-034, NFR-038, NFR-039; depends on Tasks 1–2.
 
-- [ ] Document fixture provenance, stable IDs, currencies, scales, effective dates, time zones, entity scopes, source revisions, and intended rule versions. Confirm all records are synthetic and contain no secrets or customer-derived values.
-- [ ] Add minimal representative entities, hierarchy versions, bank accounts, source contracts, daily cash movements, facilities, intercompany pairs, FX versions, and planning opening balances.
-- [ ] Add adversarial fixtures for null versus zero, empty extracts, duplicate natural keys, negative overdrafts, zero denominators, exact tolerances, T0/T0+1s, adjacent effective dates, stale ETags, duplicate events, restricted entities, and rounding residuals.
-- [ ] Have a second finance/domain reviewer author or review expected cash, headroom, covenant, reconciliation, allocation, and P&L/BS/CF results independently of implementation code; store decimal strings and explicit rounding bases in `db/fixtures/expected/`.
-- [ ] Run `./mvnw -pl tests/integration -Dtest=FixtureIntegrityTest test`; expect schema validation, unique stable IDs, signed provenance, and exact golden-result schema checks to pass.
+- [x] Document fixture provenance, stable IDs, currencies, scales, effective dates, time zones, entity scopes, source revisions, and intended rule versions. Confirm all records are synthetic and contain no secrets or customer-derived values.
+  - Result: PASS — `db/fixtures/README.md` documents conventions; `provenance.manifest` carries SHA-256 digest + authorship for every file (36 digests); integrity test enforces synthetic-only guarantees (no IBAN/PAN/email patterns) and rejects scientific-notation/floating-point money.
+- [x] Add minimal representative entities, hierarchy versions, bank accounts, source contracts, daily cash movements, facilities, intercompany pairs, FX versions, and planning opening balances.
+  - Result: PASS — master-data (2 hierarchy versions with shared boundary date 2026-07-01), treasury (opening balances, 6 movements, 3 facilities, 3 deposits, 4 intercompany rows, covenant definitions/inputs), planning (opening balances, allocation drivers).
+- [x] Add adversarial fixtures for null versus zero, empty extracts, duplicate natural keys, negative overdrafts, zero denominators, exact tolerances, T0/T0+1s, adjacent effective dates, stale ETags, duplicate events, restricted entities, and rounding residuals.
+  - Result: PASS — all twelve categories declared in `adversarial/adversarial-cases.csv` with payloads; `FixtureIntegrityTest` asserts category coverage, payload existence, the actual duplicate event id, the literal-empty vs `0.00` distinction, and T0/T0+1s timestamp exactness.
+- [x] Have a second finance/domain reviewer author or review expected cash, headroom, covenant, reconciliation, allocation, and P&L/BS/CF results independently of implementation code; store decimal strings and explicit rounding bases in `db/fixtures/expected/`.
+  - Result: PARTIAL — expected values hand-calculated with documented step-by-step arithmetic in `expected/README.md` (cash position + group FX rollup, headroom incl. exact-zero and over-limit, covenants incl. zero-denominator-INVALID and inclusive boundary, intercompany tolerance matching, reconciliation exact-tolerance, largest-remainder allocation, planning imbalance detection); decimal strings + explicit rounding mode/scale columns throughout. Independent Finance/Treasury reviewer sign-off: PENDING — tracked as an open item in `docs/operations/r0-build-status.md` and on the R0 gate (Task 16); no financial calculator consumes these values before sign-off.
+- [x] Run `./mvnw -pl tests/integration -Dtest=FixtureIntegrityTest test`; expect schema validation, unique stable IDs, signed provenance, and exact golden-result schema checks to pass.
+  - Result: PASS 2026-11-02 — `Tests run: 9, Failures: 0, Errors: 0`.
 
 **Done when:** Fixture integrity passes and named reviewers sign the golden expectations before any financial calculator uses them.  
 **Commit:** `test(fixtures): add synthetic finance data and independent expectations`

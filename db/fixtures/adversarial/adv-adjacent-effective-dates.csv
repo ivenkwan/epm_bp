@@ -1,0 +1,3 @@
+record_id,stable_key,effective_from,effective_to,value
+VEFF1,MAP-REVENUE-NORTH,2026-01-01,2026-06-30,0.10
+VEFF2,MAP-REVENUE-NORTH,2026-07-01,,0.15

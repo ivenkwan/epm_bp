@@ -1,0 +1,4 @@
+allocation_id,plan_id,allocation_basis,driver_value
+ALC001,PLN001,HEADCOUNT,120
+ALC002,PLN001,HEADCOUNT,80
+ALC003,PLN001,HEADCOUNT,100
