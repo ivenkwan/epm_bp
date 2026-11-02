@@ -1,0 +1,9 @@
+{
+  "name": "@epm/e2e-tests",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Placeholder package anchor for browser journeys; role-based Playwright suites land with Tasks 7-16.",
+  "scripts": {
+    "typecheck": "echo 'e2e: no sources yet'"
+  }
+}

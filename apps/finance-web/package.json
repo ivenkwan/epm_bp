@@ -1,0 +1,9 @@
+{
+  "name": "@epm/finance-web",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Placeholder package anchor for the pnpm workspace; the accessible strict-TypeScript application shell lands with Task 7.",
+  "scripts": {
+    "typecheck": "echo 'finance-web: no sources yet (Task 7)'"
+  }
+}
