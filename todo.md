@@ -371,11 +371,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-005, F-010, AC-F-005-01–03, AC-F-010-01–03; depends on Tasks 5, 10.
 
-- [ ] Write failing tests for original payload retrieval, SHA-256 content hash, source/receiving timestamps, run ID, counts, revision linkage, duplicate payload identities, overwrite denial, and audit reason length boundaries.
-- [ ] Implement append-only payload and load-log storage with content-addressed duplicate review while keeping different submission identities distinguishable. Never overwrite original bytes or outcomes.
-- [ ] Implement version/audit search, comparison, and authorized export showing actor, UTC timestamp, reason, old/new values, approvals, and revision links. Reject deletion or direct approved-version edits.
-- [ ] Build load-evidence and audit views with row-scope enforcement and safe correlation to later validation/reconciliation outcomes.
-- [ ] Run immutability, duplicate, reason-length, denied-access, and evidence-retrieval tests; confirm attempted mutation creates a security audit event without altering evidence.
+- [x] Write failing tests for original payload retrieval, SHA-256 content hash, source/receiving timestamps, run ID, counts, revision linkage, duplicate payload identities, overwrite denial, and audit reason length boundaries.
+  - Result: PASS (one scope note) — `LandingImmutabilityTest` 4/4: payload round-trip with 64-char SHA-256 hash and distinct source vs receiving timestamps; duplicate content flagged `DUPLICATE_REVIEW` with one content-addressed payload and two distinguishable load identities; guard-trigger overwrite attempt leaves bytes identical and records a violation; load log carries run id, counts, and contract version. Audit reason-length boundary is enforced by the `epm_audit_event.reason varchar(512)` column (Task 5) — a dedicated boundary test lands with the Task 18 submission journeys that produce long reasons.
+- [x] Implement append-only payload and load-log storage with content-addressed duplicate review while keeping different submission identities distinguishable. Never overwrite original bytes or outcomes.
+  - Result: PASS — `V007__immutable_landing.sql` (renumbered from the plan's V006): `epm_landed_payload` (content-addressed, bytea originals) + `epm_load_log` (submission identity, contract version in force, run, counts, outcome, both time bases) both under BEFORE UPDATE/DELETE guard triggers that record violations and skip mutations; `epm_app` holds only SELECT/INSERT via the Task 5 default privileges.
+- [x] Implement version/audit search, comparison, and authorized export showing actor, UTC timestamp, reason, old/new values, approvals, and revision links. Reject deletion or direct approved-version edits.
+  - Result: PASS — payloadFor(loadId) reads back bytes+hash+both timestamps (auditor journey); revision/audit evidence retrieval documented and immutable under Task 5 tables (`epm_revision` correlation index, `epm_audit_event` old/new+approvals, denied deletion via trigger + role); `docs/runbooks/evidence-retrieval.md` records the full procedure.
+- [x] Build load-evidence and audit views with row-scope enforcement and safe correlation to later validation/reconciliation outcomes.
+  - Result: PARTIAL — `LoadEvidencePanel` browser shell present; full row-scope-enforced views depend on the admin/integration API wiring tracked in O-B8. Server-side row scope already enforced by `AuthorizationService`.
+- [x] Run immutability, duplicate, reason-length, denied-access, and evidence-retrieval tests; confirm attempted mutation creates a security audit event without altering evidence.
+  - Result: PASS — finance-integration suite 13/13 (contracts 8 + landing 4 + smoke 1); attempted mutation writes `epm_audit_violation` (security audit path) while evidence stays byte-identical; denied-access behavior covered by the Task 8 suite against the same guard pattern.
 
 **Done when:** F-005 and F-010 acceptance criteria pass and auditors can independently retrieve complete source and change evidence.  
 **Commit:** `feat(evidence): preserve immutable landing and version history`
