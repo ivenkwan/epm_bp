@@ -2,8 +2,12 @@
   "name": "@epm/e2e-tests",
   "private": true,
   "version": "0.1.0",
-  "description": "Placeholder package anchor for browser journeys; role-based Playwright suites land with Tasks 7-16.",
+  "description": "Role-based browser journeys and accessibility checks (Playwright + axe).",
   "scripts": {
-    "typecheck": "echo 'e2e: no sources yet'"
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.10.2",
+    "@playwright/test": "1.56.1"
   }
 }

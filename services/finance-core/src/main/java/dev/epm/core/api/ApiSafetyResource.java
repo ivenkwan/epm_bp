@@ -132,12 +132,19 @@ public class ApiSafetyResource {
         }
         int revision = latest.get();
         String etag = "\"revision-" + revision + "\"";
+        String recordedAt =
+                revisions
+                        .recordedAtUtc("submission", submissionId, revision)
+                        .map(java.time.OffsetDateTime::toString)
+                        .orElse("");
         return Response.ok(
                         "{\"submissionId\":\""
                                 + submissionId
                                 + "\",\"revision\":"
                                 + revision
-                                + ",\"etag\":\""
+                                + ",\"status\":\"RECEIVED\",\"recordedAt\":\""
+                                + recordedAt
+                                + "\",\"etag\":\""
                                 + revision
                                 + "\"}")
                 .header("ETag", etag)

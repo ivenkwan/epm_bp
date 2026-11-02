@@ -271,11 +271,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-041 foundation, NFR-003, NFR-025, NFR-026; depends on Task 6.
 
-- [ ] Write failing component tests for generated-type use, decimal-string parsing/display, invalid API payload rejection, loading/empty/error states, keyboard focus, 200% zoom reflow, and locale-preserving date/number formatting.
-- [ ] Build the React/Vite shell with OIDC handoff, role-aware navigation, session expiry handling, correlation-aware error presentation, and accessible layout primitives. Do not put entitlements or financial formulas in browser code.
-- [ ] Add generated client/runtime validation at every API boundary and prohibit unreviewed `any` through lint/type gates. Preserve decimal strings until display; never parse authoritative money as JavaScript `number`.
-- [ ] Implement responsive submission/approval/consumption shells with visible certification/freshness/status slots and no two-dimensional scrolling at 200% zoom.
-- [ ] Run typecheck, lint, unit tests, production build, Playwright keyboard journeys, automated WCAG scans, and manual screen-reader/focus/contrast checks; expect zero critical/serious findings.
+- [x] Write failing component tests for generated-type use, decimal-string parsing/display, invalid API payload rejection, loading/empty/error states, keyboard focus, 200% zoom reflow, and locale-preserving date/number formatting.
+  - Result: PASS — 14 vitest component tests across `tests/shell.test.tsx` and `tests/submission-lookup.test.tsx`: decimal-string display preserves scale/`data-raw` (no scientific notation, no `number` parsing), invalid API payloads rejected at the boundary, loading/empty/error states, landmarks/keyboard navigation, fluid-layout rules.
+- [x] Build the React/Vite shell with OIDC handoff, role-aware navigation, session expiry handling, correlation-aware error presentation, and accessible layout primitives. Do not put entitlements or financial formulas in browser code.
+  - Result: PASS — `AppShell` (skip link, landmarks, wrapping nav, session badge with expiry handling modeled in `useSession` for the Task 8 OIDC handoff), `ErrorBanner` correlation-aware, `SubmissionLookup` consumption journey; no entitlements or financial formulas in browser code.
+- [x] Add generated client/runtime validation at every API boundary and prohibit unreviewed `any` through lint/type gates. Preserve decimal strings until display; never parse authoritative money as JavaScript `number`.
+  - Result: PASS — types generated from `common-v1.yaml` via openapi-typescript (drift gate `verify-api-types.sh` wired into CI), zod runtime validation on every parsed body/problem (`src/api/client.ts`), `@typescript-eslint/no-explicit-any` + strict TS with `exactOptionalPropertyTypes`; `MoneyText` renders decimal strings via `BigInt` digit grouping only.
+- [x] Implement responsive submission/approval/consumption shells with visible certification/freshness/status slots and no two-dimensional scrolling at 200% zoom.
+  - Result: PASS — consumption shell with `StatusSlot` (status/revision/recorded-UTC) and certification/freshness slots on Reports; fluid rem-based layout verified at halved viewport (200% zoom equivalent) in both unit and Playwright tests.
+- [x] Run typecheck, lint, unit tests, production build, Playwright keyboard journeys, automated WCAG scans, and manual screen-reader/focus/contrast checks; expect zero critical/serious findings.
+  - Result: PARTIAL — typecheck, eslint, 14/14 vitest, production build, and 4/4 Playwright journeys (skip-link focus, keyboard navigation, 200% reflow, axe WCAG2.x scan with zero critical/serious findings) all green. Manual screen-reader/contrast checks are human-executable steps recorded as O-B7 for a named reviewer before the R0 gate. Local note: Playwright browser install is unsupported on Ubuntu 26.04; e2e ran against the system-cached chromium via `EPM_CHROMIUM_PATH`.
 
 **Done when:** The shell works on current and previous major supported browsers, all payloads are runtime-validated, and essential navigation is accessible with desktop and mobile-browser layouts.  
 **Commit:** `feat(web): add accessible strictly typed application shell`

@@ -84,6 +84,9 @@ jobs:
       - name: Traceability gate
         run: ./scripts/quality/verify-traceability.sh
 
+      - name: Generated API types drift gate
+        run: ./scripts/quality/verify-api-types.sh
+
       - name: Rules gate (once rule assets exist)
         run: ./scripts/quality/verify-rules.sh
 
