@@ -219,11 +219,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-005 and F-010 foundation, NFR-004, NFR-024, NFR-038; depends on Tasks 3–4.
 
-- [ ] Write failing persistence tests for stable IDs, UTC timestamps, decimal scale/currency metadata, revision uniqueness, immutable old/new audit values, and one business commit producing exactly one outbox row.
-- [ ] Implement base entities and constraints with database-enforced revision uniqueness, explicit effective/recorded time fields, fixed-precision numerics, and actor/reason/correlation metadata.
-- [ ] Deny UPDATE/DELETE on audit and landed-evidence tables through least-privilege roles and database guards; record attempted violations in a separate security audit path without changing evidence.
-- [ ] Implement the outbox dispatcher with stable event IDs, relational watermark, correlation ID, retry/backoff, consumer deduplication, and no event publication before commit. Consumers fetch authoritative state through APIs.
-- [ ] Run concurrent commit, crash-before-dispatch, redelivery, and replay tests; expect no duplicate revision, certification, adjustment, or externally observed business effect.
+- [x] Write failing persistence tests for stable IDs, UTC timestamps, decimal scale/currency metadata, revision uniqueness, immutable old/new audit values, and one business commit producing exactly one outbox row.
+  - Result: PASS — `OutboxConcurrencyTest` written first and driven red→green: 60 concurrent allocations across 12 threads produce a gap-free unique 1..60 revision sequence; `recorded_at_utc` carries a UTC offset distinct from `effective_date`; one committed unit of work (revision + audit + outbox) leaves exactly one outbox row and a rolled-back unit leaves zero.
+- [x] Implement base entities and constraints with database-enforced revision uniqueness, explicit effective/recorded time fields, fixed-precision numerics, and actor/reason/correlation metadata.
+  - Result: PASS — `db/migrations/V001__core_identity_and_revision.sql`: `epm_decimal_type` registry (MONEY/FX_RATE/RATIO/PERCENT with scale+rounding), `epm_object`, `epm_revision` (composite PK on object+stable id+revision, effective vs recorded timebases, actor/reason/correlation, SHA-256 payload hash); canonical SQL at repo `db/migrations/` copied into the artifact by the finance-core build.
+- [x] Deny UPDATE/DELETE on audit and landed-evidence tables through least-privilege roles and database guards; record attempted violations in a separate security audit path without changing evidence.
+  - Result: PASS — `V002`: guard trigger records attempts into `epm_audit_violation` and skips the mutation for privileged roles (tested: privileged UPDATE leaves evidence byte-identical, violation count rises); `epm_app` NOLOGIN role holds only SELECT/INSERT (tested via `SET ROLE epm_app`: UPDATE denied with `permission denied`, evidence untouched).
+- [x] Implement the outbox dispatcher with stable event IDs, relational watermark, correlation ID, retry/backoff, consumer deduplication, and no event publication before commit. Consumers fetch authoritative state through APIs.
+  - Result: PASS — `OutboxService`: UUID event ids, `FOR UPDATE SKIP LOCKED` claim, dispatched/error watermarks with attempt counters and `last_error`, redelivery acknowledged without re-delivery (in-process delivered-id set; consumer-side dedupe by event id asserted), payload documented as advisory (consumers refetch authoritative state).
+- [x] Run concurrent commit, crash-before-dispatch, redelivery, and replay tests; expect no duplicate revision, certification, adjustment, or externally observed business effect.
+  - Result: PASS 2026-11-02 — finance-core suite `Tests run: 8, Failures: 0, Errors: 0` (7 concurrency/fault tests + service smoke) against containerized PostgreSQL 17/AGE via Quarkus dev services.
 
 **Done when:** `OutboxConcurrencyTest` and audit immutability tests pass under concurrency/fault injection, and sampled audit records reconstruct actor, reason, old/new values, and approvals.  
 **Commit:** `feat(core): add immutable audit and transactional outbox`

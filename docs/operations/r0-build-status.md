@@ -13,7 +13,7 @@ tracked gap · PENDING = not yet run/owned.
 | 2 | Monorepo toolchain, version lock, CI, compatibility spike | PASS | reactor `./mvnw verify` green (5 service smoke tests + 5 toolchain tests); `verify-provenance.sh` clean-export PASS; `docs/decisions/version-matrix.md` records locked versions/digests and the Kogito-extension-retirement finding |
 | 3 | Synthetic fixtures + independent golden results | PASS with one tracked gap | `FixtureIntegrityTest` → 9/9 green (digest provenance, unique IDs, decimal-string discipline, effective-date intervals, referential integrity, golden schemas, 12 adversarial categories, synthetic-only scan) |
 | 4 | Local Kubernetes runtime (kind + k3d), APISIX OIDC edge, Keycloak, OTel | PASS with two tracked gaps | `PlatformSmokeTest` 5/5 on kind 0.33/K8s 1.37 AND k3d 5.8.3/k3s 1.31.5 (identical manifests; k3d deleted after verification); anonymous 401, authenticated 200 + correlation id, spans+metric points accepted, governance labels on received telemetry, no token in exposition; restart drill: postgres-age + finance-core pod deletions with AGE graph durable on PVC (`ag_graph` count=1) |
-| 5 | Core schema, immutable audit, transactional outbox | PENDING | — |
+| 5 | Core schema, immutable audit, transactional outbox | PASS | `V001`/`V002` migrations (revision uniqueness, UTC timebases, decimal registry, guard trigger, `epm_app` least-privilege role); `OutboxConcurrencyTest` 7/7: 60-thread gap-free revision sequence, commit→one outbox row / rollback→zero, redelivery exactly-once, tamper detection + role denial; finance-core suite 8/8 |
 
 ## Open items (blockers for the R0 gate, none block later engineering)
 
