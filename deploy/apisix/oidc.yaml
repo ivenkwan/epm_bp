@@ -1,0 +1,28 @@
+# APISIX OIDC edge configuration (authoritative values for the local platform)
+
+The runtime route configuration lives in `deploy/apisix/routes.yaml` (rendered into the
+cluster by `scripts/setup/install-local-dependencies.sh`). This file records the OIDC
+decisions so environments can be rebuilt identically.
+
+## Decisions
+
+| Concern | Decision |
+|---|---|
+| Token validation | Bearer-only, local JWT validation against the discovery JWKS (`use_jwks: true`); no introspection round-trip, no session storage at the edge |
+| Identity propagation | Verified identity forwarded as the userinfo header; the Java services always re-read authoritative roles from PostgreSQL, so edge claims are transport, not authority |
+| Issuer pinning | Keycloak runs with `KC_HOSTNAME` + `KC_HOSTNAME_STRICT=true` so the issuer in tokens and discovery match regardless of the entry host |
+| MFA | Enforced at the identity provider: the `epm` realm requires MFA for interactive users (production policy); service clients authenticate with generated secrets held only in install-time Secrets |
+| Rate limiting | `limit-req` (rate 50, burst 10) keyed on the authorization header per identity |
+| Body limits | `limit-body-size` 1 MiB at the edge (templates stream through the ingestion path) |
+| Correlation | `request-id` plugin: `X-Correlation-Id` echoed on responses and propagated downstream |
+| TLS | Terminated at the node boundary in local dev only (see O-B4); production overlays must terminate TLS at the edge with managed certificates |
+
+## Security invariants
+
+1. The gateway is never an authorization engine: entity scopes, RBAC, and SoD are
+   enforced server-side (`finance-admin` `AuthorizationService`) — proven by the
+   gateway-bypass test calling the service directly.
+2. No credential literals exist in this repository: the gateway client secret and realm
+   user password are generated at install time and substituted from templates.
+3. Anonymous calls to governed routes receive `401`; denial responses never echo
+   restricted values.

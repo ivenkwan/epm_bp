@@ -16,6 +16,7 @@ tracked gap · PENDING = not yet run/owned.
 | 5 | Core schema, immutable audit, transactional outbox | PASS | `V001`/`V002` migrations (revision uniqueness, UTC timebases, decimal registry, guard trigger, `epm_app` least-privilege role); `OutboxConcurrencyTest` 7/7: 60-thread gap-free revision sequence, commit→one outbox row / rollback→zero, redelivery exactly-once, tamper detection + role denial; finance-core suite 8/8 |
 | 6 | API contracts, idempotency, ETags, problem details | PASS with one tracked gap (O-B6) | finance-core suite 14/14; `ApiSafetyContractTest` 6/6 (replay incl. canonical key order, changed-payload 409, stale If-Match 409 with no second effect, 422 violations, correlation echo, F-044 eight excluded routes 404); `common-v1.yaml` with verbatim PRD §8 examples |
 | 7 | Accessible frontend shell + generated API boundary | PASS with one tracked gap (O-B7) | finance-web: typecheck ✓, eslint ✓, vitest 14/14 ✓, production build ✓; e2e 4/4 (skip-link focus, keyboard nav, 200% reflow, axe WCAG zero critical/serious); generated-types drift gate green |
+| 8 | SSO/MFA, RBAC/RLS, SoD, access recertification | PASS | `V004` entitlements (versioned PRD 6.8.2 matrix, SoD pairs, scoped grants with review deadlines); `AuthorizationSecurityTest` 8/8: allow+audit, restricted-entity deny w/o leakage, empty scope zero rows, self-approval deny, SoD conflict deny+escalation, action-outside-role, overdue review deny+escalate (never grants), gateway bypass; finance-admin suite 9/9 |
 
 ## Open items (blockers for the R0 gate, none block later engineering)
 
