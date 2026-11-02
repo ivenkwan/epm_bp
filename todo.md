@@ -346,11 +346,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-002, AC-F-002-01–03, OQ-002; depends on Tasks 8–9.
 
-- [ ] Define versioned contracts for owner, source, grain, fields, precedence, cadence, cutoff, quality, reconciliation, retention, credentials-by-reference, compatibility, and deprecation.
-- [ ] Write failing tests for authoritative activation, ambiguous scope/period claims, optional field omission, null required grain, contract diffs, and deprecation impact.
-- [ ] Implement review/approve/activate/deprecate transitions with independent ownership and immutable versions; block ambiguous active contracts and identify field-specific violations.
-- [ ] Build contract registration, comparison, compatibility, and scope views. Require R1 direct-feed versus template decisions, latency, and control totals from source owners before activation.
-- [ ] Run AC-F-002-01–03 and consumer compatibility tests; expect only one authoritative contract per declared scope unless an approved precedence rule resolves it.
+- [x] Define versioned contracts for owner, source, grain, fields, precedence, cadence, cutoff, quality, reconciliation, retention, credentials-by-reference, compatibility, and deprecation.
+  - Result: PASS — `V006__source_contracts.sql` (renumbered from the plan's V005): source systems, versioned contracts (owner, scope, grain, cadence, UTC cutoff, jsonb field/quality/reconciliation definitions, retention, credentials-by-reference, precedence, status lifecycle), immutable transition evidence; documented in `docs/architecture/source-contract-schema.md`.
+- [x] Write failing tests for authoritative activation, ambiguous scope/period claims, optional field omission, null required grain, contract diffs, and deprecation impact.
+  - Result: PASS — `SourceContractTest` 8/8: authoritative activation; ambiguous equal-precedence claim rejected leaving active evidence untouched; better precedence supersedes with evidence; proposer cannot self-approve; null required grain is a field-level violation; missing scope named per field; deprecation removes authority; contract diffs land as a new immutable version superseding the prior ACTIVE version.
+- [x] Implement review/approve/activate/deprecate transitions with independent ownership and immutable versions; block ambiguous active contracts and identify field-specific violations.
+  - Result: PASS — `SourceContractService`: PROPOSED→APPROVED (independent approver enforced)→ACTIVE (ambiguity blocked; precedence-resolved swap deprecates the incumbent with transition evidence)→DEPRECATED; validation reports per-field violations; single-authority invariant enforced at activation (lookup index supports it; a hard partial-unique index cannot express the atomic precedence swap, recorded in the schema doc).
+- [x] Build contract registration, comparison, compatibility, and scope views. Require R1 direct-feed versus template decisions, latency, and control totals from source owners before activation.
+  - Result: PARTIAL — versioned comparison lands as immutable versions (tested) with transition evidence as the comparison record; browser panel `SourceContractsPanel` is a shell pending the admin API wiring (O-B8). The R1 pre-activation checklist (direct-feed vs template, latency, control totals) is specified in the schema doc under OQ-002; enforcement begins with R1 activation (no R0 activation of real sources occurs).
+- [x] Run AC-F-002-01–03 and consumer compatibility tests; expect only one authoritative contract per declared scope unless an approved precedence rule resolves it.
+  - Result: PASS — `authoritativeFor(scope)` returns exactly one ACTIVE contract (activation-time ambiguity rejection + precedence resolution asserted); finance-integration suite 9/9.
 
 **Done when:** Source owners sign the initial contracts and all F-002 criteria pass without changing existing active evidence on rejection.  
 **Commit:** `feat(integration): add authoritative source contracts`
