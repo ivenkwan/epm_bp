@@ -1,0 +1,157 @@
+# Deny-by-default network policy for the local platform. Ingress is only allowed along
+# documented paths: gateway -> finance-core; finance-core -> postgres, collector;
+# keycloak discovery from apisix; operator debugging via kube API.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: epm-system
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-edge-to-gateway
+  namespace: epm-system
+  annotations:
+    epm.io/note: >-
+      Local/dev edge exposure: the NodePort gateway accepts external traffic (ipBlock
+      any) because the route is bearer-authenticated. Production overlays replace this
+      with load-balancer or ingress-controller specific sources.
+spec:
+  podSelector:
+    matchLabels:
+      app: apisix
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 9080
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-gateway-to-core
+  namespace: epm-system
+spec:
+  podSelector:
+    matchLabels:
+      app: finance-core
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: apisix
+      ports:
+        - protocol: TCP
+          port: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-core-to-postgres
+  namespace: epm-system
+spec:
+  podSelector:
+    matchLabels:
+      app: postgres-age
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: finance-core
+        - podSelector:
+            matchLabels:
+              app: postgres-age-init
+      ports:
+        - protocol: TCP
+          port: 5432
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-core-and-jobs-to-collector
+  namespace: epm-system
+spec:
+  podSelector:
+    matchLabels:
+      app: otel-collector
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: finance-core
+      ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-apisix-to-keycloak-discovery
+  namespace: epm-system
+spec:
+  podSelector:
+    matchLabels:
+      app: keycloak
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: apisix
+      ports:
+        - protocol: TCP
+          port: 8080
+---
+# Local/dev: the OIDC test provider must also answer token requests from the developer
+# host (smoke tests, browser login) via the mapped node port.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dev-host-to-keycloak
+  namespace: epm-system
+spec:
+  podSelector:
+    matchLabels:
+      app: keycloak
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 8080
+---
+# Local/dev: the collector self-metrics (:8888) and received-metrics (:8889) endpoints
+# back the platform smoke assertions.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dev-host-to-collector-metrics
+  namespace: epm-system
+spec:
+  podSelector:
+    matchLabels:
+      app: otel-collector
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 8888
+        - protocol: TCP
+          port: 8889

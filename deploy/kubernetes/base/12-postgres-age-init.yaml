@@ -1,0 +1,49 @@
+# AGE initialization: create extension and the lineage projection graph once PostgreSQL is up.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgres-age-init
+  namespace: epm-system
+  annotations:
+    # Re-run the idempotent initializer on every apply (CREATE EXTENSION IF NOT EXISTS).
+    kustomize.kubernetes.io/behavior: replace
+spec:
+  backoffLimit: 12
+  template:
+    metadata:
+      labels:
+        app: postgres-age-init
+        epm.io/cost-center: platform
+    spec:
+      restartPolicy: OnFailure
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+      containers:
+        - name: psql
+          image: apache/age:release_PG17_1.7.0
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              until pg_isready -h postgres-age -U epm -d epm; do sleep 2; done
+              psql -h postgres-age -U epm -d epm -v ON_ERROR_STOP=1 <<'SQL'
+              CREATE EXTENSION IF NOT EXISTS age;
+              SET search_path = ag_catalog, "$user", public;
+              SELECT ag_catalog.create_graph('epm_lineage');
+              SQL
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_PASSWORD
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi

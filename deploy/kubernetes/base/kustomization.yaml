@@ -1,0 +1,39 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Stamp every resource (including generated ConfigMaps) with the platform namespace.
+namespace: epm-system
+
+resources:
+  - 00-namespace.yaml
+  - 10-postgres-age.yaml
+  - 12-postgres-age-init.yaml
+  - 20-keycloak.yaml
+  - 30-apisix.yaml
+  - 40-otel-collector.yaml
+  - 50-finance-core.yaml
+  - 60-networkpolicies.yaml
+
+configMapGenerator:
+  # generated/ files are copied/rendered by scripts/setup/install-local-dependencies.sh
+  # from the authoritative sources (deploy/observability/otel-collector.yaml and
+  # deploy/apisix/*.yaml). Kustomize forbids reading paths outside this root, so the
+  # installer stages them here first; the directory is gitignored. Name hashes are
+  # disabled so deployment volume references stay stable; config changes require the
+  # installer's rollout wait to complete.
+  - name: otel-collector-config
+    options:
+      disableNameSuffixHash: true
+    files:
+      - config.yaml=generated/otel-collector.yaml
+  - name: apisix-config
+    options:
+      disableNameSuffixHash: true
+    files:
+      - config.yaml=generated/apisix-main.yaml
+      - apisix.yaml=generated/apisix-routes.yaml
+
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: epm-finance
+    includeSelectors: false

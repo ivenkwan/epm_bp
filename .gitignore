@@ -14,3 +14,5 @@ test-results/
 .v2c/
 .video_agent/
 receipts/
+.secrets/
+deploy/kubernetes/base/generated/

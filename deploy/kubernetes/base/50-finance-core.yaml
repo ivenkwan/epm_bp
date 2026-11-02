@@ -1,0 +1,83 @@
+# finance-core application service (R0 shell; capabilities land with Tasks 5-16).
+apiVersion: v1
+kind: Service
+metadata:
+  name: finance-core
+  namespace: epm-system
+  labels:
+    app: finance-core
+spec:
+  selector:
+    app: finance-core
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finance-core
+  namespace: epm-system
+  labels:
+    app: finance-core
+    app.kubernetes.io/part-of: epm-finance
+    epm.io/cost-center: product
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: finance-core
+  template:
+    metadata:
+      labels:
+        app: finance-core
+        app.kubernetes.io/part-of: epm-finance
+        epm.io/cost-center: product
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 185
+        runAsGroup: 0
+      containers:
+        - name: finance-core
+          image: finance-core:r0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: QUARKUS_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+              value: http://otel-collector.epm-system.svc.cluster.local:4317
+            - name: QUARKUS_OTEL_METRICS_EXPORTER
+              value: otlp
+            - name: QUARKUS_OTEL_EXPORTER_OTLP_METRICS_ENDPOINT
+              value: http://otel-collector.epm-system.svc.cluster.local:4317
+            - name: QUARKUS_DATASOURCE_JDBC_URL
+              value: jdbc:postgresql://postgres-age.epm-system.svc.cluster.local:5432/epm
+            - name: QUARKUS_DATASOURCE_USERNAME
+              value: epm
+            - name: QUARKUS_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_PASSWORD
+          resources:
+            requests:
+              cpu: 100m
+              memory: 384Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          readinessProbe:
+            httpGet:
+              path: /q/health/ready
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /q/health/live
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 20

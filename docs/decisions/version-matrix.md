@@ -23,7 +23,7 @@ Verification run: 2026-11-02, `./mvnw -pl tests/integration test -Dtest=Toolchai
 | PostgreSQL + AGE image | `apache/age:release_PG17_1.7.0` @ `sha256:92a5d223965bc2e436f9eee436e0bd2c0d81f3b59124b3d197ec94706f3450a8` | Testcontainers, `deploy/kubernetes/base` | spike tests |
 | APISIX | 3.13.0-debian @ `sha256:c5c7a55ebb5c07abc210dbb963a37f41030e12c91d23bacedbaa168fec633bd7` | `deploy/apisix` | image pull + deploy (Task 4) |
 | OIDC test provider (Keycloak) | 26.8 @ `sha256:3f3c5f8e03c614774b4bd9173b88391fefa4153bfc010d8012d59ad825377332` | `deploy/kubernetes/base` | image pull + deploy (Task 4) |
-| OpenTelemetry collector | 0.116.0 @ `sha256:91d0e8dcd0cf4c0f2b1002a3be5979dfb20be235af96ef51063164548e2ccff6` | `deploy/observability` | image pull + deploy (Task 4) |
+| OpenTelemetry collector | 0.117.0 @ `sha256:55440719c41552ccc1a9f02fb88b0db773e3f7f9f2bad22881ba0f7be1779171` (0.116.0 rejected: `exec /otelcol: no such file` on the verified host) | `deploy/observability` | image boot + deploy (Task 4) |
 | Node.js (LTS) | 22.22.1 | CI setup-node, local dev | pnpm workspace install/build |
 | pnpm | 10.34.5 | `package.json` packageManager | lockfile generation, builds |
 | JUnit | 5.11.3 | `pom.xml` BOM import | all tests |

@@ -1,0 +1,38 @@
+# Edge routes for the local platform. The gateway is deliberately NOT an authorization
+# engine: OIDC here is authentication-only propagation of the caller identity; entity
+# scopes, RBAC, and SoD are enforced by the Java services (Tasks 6-8).
+routes:
+  - uri: /api/v1/core/*
+    upstream:
+      name: finance-core
+      nodes:
+        "finance-core.epm-system.svc.cluster.local:8080": 1
+      type: roundrobin
+      pass_host: node
+    plugins:
+      openid-connect:
+        client_id: apisix-gateway
+        # Placeholder substituted at install time from a generated secret; the rendered
+        # route config never enters the repository.
+        client_secret: __GATEWAY_CLIENT_SECRET__
+        discovery: http://keycloak.epm-system.svc.cluster.local:8080/realms/epm/.well-known/openid-configuration
+        bearer_only: true
+        # Validate bearer JWTs locally against the discovery JWKS (issuer is pinned via
+        # KC_HOSTNAME); no token introspection round-trip and no session storage.
+        use_jwks: true
+        set_access_token_header: false
+        set_id_token_header: false
+        set_userinfo_header: true
+        timeout: 5
+        ssl_verify: false
+      request-id:
+        header_name: X-Correlation-Id
+        include_in_response: true
+      limit-body-size:
+        max_size: 1048576
+      limit-req:
+        rate: 50
+        burst: 10
+        key: http_authorization
+        rejected_code: 429
+#END

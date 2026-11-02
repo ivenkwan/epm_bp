@@ -43,6 +43,15 @@
     <dependency>
       <groupId>dev.epm</groupId>
       <artifactId>finance-core</artifactId>
+      <!-- Each deployable declares its own platform BOM-managed Quarkus runtime; the
+           library's transitive Quarkus artifacts are excluded so dependency management
+           stays with the consumer (enforced by banDuplicatePomDependencyVersions + BOMs). -->
+      <exclusions>
+        <exclusion>
+          <groupId>io.quarkus</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 
@@ -51,6 +60,17 @@
       <plugin>
         <groupId>${quarkus.platform.groupId}</groupId>
         <artifactId>quarkus-maven-plugin</artifactId>
+        <version>${quarkus.platform.version}</version>
+        <extensions>true</extensions>
+        <executions>
+          <execution>
+            <goals>
+              <goal>build</goal>
+              <goal>generate-code</goal>
+              <goal>generate-code-tests</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

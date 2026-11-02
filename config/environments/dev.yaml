@@ -1,0 +1,42 @@
+# Non-secret environment configuration for the local dev environment.
+# Secrets are referenced by name only and created at install time by
+# scripts/setup/install-local-dependencies.sh from generated values in .secrets/local.env.
+
+platform:
+  cluster: kind://epm-finance
+  namespace: epm-system
+
+gateway:
+  base_url: http://localhost:18080
+  routes:
+    core: /api/v1/core
+
+identity:
+  provider: keycloak
+  base_url: http://localhost:18081
+  realm: epm
+  # Synthetic local-only client; no secret lives in this file.
+  web_client_id: finance-web
+
+database:
+  host: postgres-age.epm-system.svc.cluster.local
+  port: 5432
+  database: epm
+  credentials_secret: postgres-credentials
+
+graph:
+  name: epm_lineage
+  rebuild_on_start: false
+
+telemetry:
+  otlp_endpoint: http://otel-collector.epm-system.svc.cluster.local:4317
+  metrics_url: http://localhost:18888/metrics
+  redaction:
+    drop_attributes:
+      - http.request.header.authorization
+      - authorization
+      - cookie
+
+limits:
+  gateway_rate_per_identity: 50
+  gateway_max_body_bytes: 1048576
