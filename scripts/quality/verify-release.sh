@@ -18,6 +18,7 @@ cd "${REPO_ROOT}"
 case "${RELEASE}" in
   R0) PACK="docs/operations/r0-evidence-pack.md" ;;
   R1) PACK="docs/operations/r1-evidence-pack.md" ;;
+  R2) PACK="docs/operations/r2-evidence-pack.md" ;;
   *) echo "unknown release ${RELEASE}" >&2; exit 2 ;;
 esac
 
