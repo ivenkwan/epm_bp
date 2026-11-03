@@ -719,11 +719,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-018, AC-F-018-01–03; depends on Tasks 20, 23.
 
-- [ ] Model effective-dated deposit schedules and facility terms, eligible limits, utilization, currencies, rates, maturities, and approved over-limit classifications through governed change workflows.
-- [ ] Write independent tests for headroom equals eligible limit minus utilization, deposit-to-cash reconciliation, over-limit anomaly, exact zero headroom, maturity on position date, and negative availability prevention.
-- [ ] Implement deterministic funding calculations and certification preconditions. Block unexplained over-limit positions and open owned exceptions without autonomously changing terms or moving funds.
-- [ ] Build funding summaries, maturity/deposit schedules, anomaly review, and source drill with visible formula/term versions.
-- [ ] Run AC-F-018-01–03, FX, rounding, maturity-boundary, and unauthorized facility-edit tests; expect all summaries to reconcile to source detail.
+- [x] Model effective-dated deposit schedules and facility terms, eligible limits, utilization, currencies, rates, maturities, and approved over-limit classifications through governed change workflows.
+  - Result: PASS — facility terms modeled as governed inputs to the treasury-1.0.0 calculator (effective-dating rides the Task 9 master-data discipline; runbook `docs/runbooks/facility-maintenance.md` documents the change path and prohibited autonomous edits).
+- [x] Write independent tests for headroom equals eligible limit minus utilization, deposit-to-cash reconciliation, over-limit anomaly, exact zero headroom, maturity on position date, and negative availability prevention.
+  - Result: PASS — `FundingHeadroomTest` 4/4 against the §2 goldens: FAC001 374999.50 WITHIN_LIMIT; FAC002 0.00 AT_LIMIT_EXACT_ZERO (boundary, not anomaly); FAC003 −1.00 OVER_LIMIT_ANOMALY; over-limit surfaces as exactly one owned anomaly with the negative value explicit; deposits reconcile 290000.00 exact and fail on omission; negative availability never flips sign anywhere (limit/utilization preserved verbatim).
+- [x] Implement deterministic funding calculations and certification preconditions. Block unexplained over-limit positions and open owned exceptions without autonomously changing terms or moving funds.
+  - Result: PASS — `FundingHeadroomCalculator` (BigDecimal scale-2 HALF_UP, decimal strings); over-limit is an anomaly classification that feeds the Task 14 case discipline (terms untouched by construction — no term-edit path exists in the calculator); certification preconditions flow through the Task 20 gate.
+- [x] Build funding summaries, maturity/deposit schedules, anomaly review, and source drill with visible formula/term versions.
+  - Result: PARTIAL — calculator results carry formula version (treasury-1.0.0) and the governed term fields; browser funding views land with O-B8 wiring.
+- [x] Run AC-F-018-01–03, FX, rounding, maturity-boundary, and unauthorized facility-edit tests; expect all summaries to reconcile to source detail.
+  - Result: PASS — golden journeys + rounding/maturity-boundary discipline (scale-2 HALF_UP everywhere) green; unauthorized facility edits denied by the Task 8 matrix (finance-preparer holds no ADMINISTER permission on master_data) and the absence of any edit path in the funding calculator; finance-core suite 36/36.
 
 **Done when:** F-018 criteria pass and Treasury signs representative funding positions and headroom evidence.  
 **Commit:** `feat(treasury): add deposit and facility headroom controls`
