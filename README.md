@@ -713,11 +713,11 @@ Yes. The baseline requires cloud-agnostic Kubernetes and avoids provider-specifi
 - [ ] Verify that all README commands and paths match the implemented repository.
 
 ---
-
+ 
 ## License
 
 A license has not yet been selected. Add an explicit license before public publication or reuse.
 
 ---
 
-**Current source of truth:** [Product Requirements Document](./AI_Empowered_Financial_Management_PRD.md)
+**Current source of truth:** [Product Requirements Document](./docs/AI_Empowered_Financial_Management_PRD.md)
