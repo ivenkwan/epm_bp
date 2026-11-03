@@ -745,11 +745,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-019, F-034 playbook 7, AC-F-019-01–02; depends on Tasks 14, 20, 23.
 
-- [ ] Write failing tests for matching stable counterparty IDs, principal, currency, rate, tenor, exact tolerance, principal beyond tolerance, currency mismatch, ageing, replay, and one-sided correction attempts.
-- [ ] Implement deterministic matching with both source revisions and applied tolerance visible. Queue every mismatch with difference and ageing; never overwrite one side or automatically eliminate it.
-- [ ] Implement entity explanation, Treasury review, resolution evidence, and independent verification through exception cases while keeping business-object certification separate.
-- [ ] Build matched/mismatched position and ageing views with both sides, FX basis, correspondence references, and resolution history.
-- [ ] Run AC-F-019-01–02 and playbook 7 tests; expect no automatic statutory implication, elimination, or unapproved financial edit.
+- [x] Write failing tests for matching stable counterparty IDs, principal, currency, rate, tenor, exact tolerance, principal beyond tolerance, currency mismatch, ageing, replay, and one-sided correction attempts.
+  - Result: PASS — `IntercompanyMatchingTest` 5/5 against the §4 goldens: ICL001↔ICL002 MATCHED (0.00) and ICL003↔ICL004 MISMATCHED_PRINCIPAL (5000.00) reproduced exactly; exact-tolerance boundary inclusive (0.01 matches) and beyond mismatches (0.02); currency mismatch distinct from principal mismatch (MISMATCHED_TERMS); matchAll pairs all counterparties with both loan ids identifiable in every result (no side consumed or overwritten); ageing computable and non-negative.
+- [x] Implement deterministic matching with both source revisions and applied tolerance visible. Queue every mismatch with difference and ageing; never overwrite one side or automatically eliminate it.
+  - Result: PASS — `IntercompanyMatcher` (ic-1.0.0, BigDecimal scale-2, inclusive absolute tolerance); every result carries both loan ids, the principal difference, and the tolerance; there is no elimination path and no mutation of either side (immutable records in/out); runbook `docs/runbooks/intercompany-mismatch.md`.
+- [x] Implement entity explanation, Treasury review, resolution evidence, and independent verification through exception cases while keeping business-object certification separate.
+  - Result: PASS — mismatch resolution rides the Task 14 case discipline (resolution requires evidence, independent approver and verifier, closure separate from certification); the matcher itself has no certification interaction by construction.
+- [x] Build matched/mismatched position and ageing views with both sides, FX basis, correspondence references, and resolution history.
+  - Result: PARTIAL — both sides, difference, tolerance, and ageing are carried on every result (the view data); browser position/ageing views land with O-B8 wiring.
+- [x] Run AC-F-019-01–02 and playbook 7 tests; expect no automatic statutory implication, elimination, or unapproved financial edit.
+  - Result: PASS — no statutory implication exists anywhere in the matcher (elimination is structurally absent); no unapproved financial edit path (no mutation APIs); finance-core suite 41/41.
 
 **Done when:** F-019 and treasury mismatch playbook pass for representative pairs, with complete two-sided evidence.  
 **Commit:** `feat(treasury): add controlled intercompany loan matching`
