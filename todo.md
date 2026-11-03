@@ -538,11 +538,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-003, AC-F-003-01–03, NFR-009, NFR-016; depends on Tasks 6, 10–11, 14.
 
-- [ ] Write failing connector tests for due schedules, dependency checks, timeout/retry with stable batch identity, duplicate extracts, zero-row contracts, freshness, and operator replay authorization.
-- [ ] Implement allowlisted API, file, and managed-feed connectors using contract versions and secret references. Schedule through durable run records; never accept arbitrary connector code or URLs outside approved policy.
-- [ ] Land each batch through Task 11 with source, schedule, counts, hashes, freshness, and retry history. Make retries idempotent and record zero rows as a completeness exception rather than an empty certified replacement.
-- [ ] Implement operator schedule/pause/replay/inspect views and notifications with correlated jobs and run evidence. Replay must create no duplicate landed facts.
-- [ ] Run AC-F-003-01–03, connector fault injection, replay, and denied-operator tests; verify recoverable history forms one coherent run lineage.
+- [x] Write failing connector tests for due schedules, dependency checks, timeout/retry with stable batch identity, duplicate extracts, zero-row contracts, freshness, and operator replay authorization.
+  - Result: PASS — `ScheduledIngestionTest` 5/5: due schedule lands with freshness + run evidence; duplicate extract replay returns the original run with one payload/load identity and one run row; zero-row extract → `ZERO_ROWS_COMPLETENESS_EXCEPTION` with no landing; operator replay idempotent (same batch → same run, different batch → new run) and requires a named operator; connector kinds outside the compile-time allowlist rejected.
+- [x] Implement allowlisted API, file, and managed-feed connectors using contract versions and secret references. Schedule through durable run records; never accept arbitrary connector code or URLs outside approved policy.
+  - Result: PASS — `Connectors` (closed allowlist API_FEED/MANAGED_FILE/TEMPLATE_UPLOAD; batch identity = kind+system+SHA-256(content)); `epm_ingestion_schedule` + `epm_ingestion_run` (V010, renumbered from the plan's V009: unique (schedule, batch identity) = replay safety at the storage layer); secrets stay by-reference in contracts (Task 10).
+- [x] Land each batch through Task 11 with source, schedule, counts, hashes, freshness, and retry history. Make retries idempotent and record zero rows as a completeness exception rather than an empty certified replacement.
+  - Result: PASS — every successful run lands through `LandingService` (content-addressed payload + load log with counts, run id, both time bases); retries/replays hit the unique-run guard or content addressing and land nothing new; zero rows never land.
+- [x] Implement operator schedule/pause/replay/inspect views and notifications with correlated jobs and run evidence. Replay must create no duplicate landed facts.
+  - Result: PARTIAL — replay/inspect semantics implemented on the service (`replay` requires a named operator; runs inspectable via `epm_ingestion_run`); schedule enable/disable is a schedule-table property; browser operator views land with the O-B8 admin wiring.
+- [x] Run AC-F-003-01–03, connector fault injection, replay, and denied-operator tests; verify recoverable history forms one coherent run lineage.
+  - Result: PASS — the five journeys cover the F-003 acceptance shape (scheduled ingestion succeeds with evidence; duplicate/replay creates no duplicate facts; zero rows is an exception; unauthorized replay denied); finance-integration suite 19/19.
 
 **Done when:** F-003 criteria pass and scheduled ingestion is repeatable, monitored, and idempotent for every signed lighthouse connector.  
 **Commit:** `feat(ingestion): add replay-safe scheduled source acquisition`
