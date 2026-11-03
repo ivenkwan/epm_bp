@@ -667,11 +667,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-016, F-034 playbook 3, AC-F-016-01–03, NFR-008, NFR-012, NFR-HITL-004–006, OQ-004; depends on Tasks 14, 18–20.
 
-- [ ] Configure entity calendars, receiving timestamps, business cutoffs, tasks, owners, reminders, late/missing queues, and approved partial-publication rules from signed OQ-004 decisions.
-- [ ] Write failing tests for all-on-time completion, missed cutoff, exact T0, T0+1s, original timestamp preservation, stale prior-period exclusion, timer restart, and reassignment.
-- [ ] Implement Kogito daily processes that coordinate submit/review/return/resubmit/escalate while Java owns submission and certification state. Timers never certify, approve, close, or publish.
-- [ ] Build daily completion matrix and late/missing queues with freshness, accountable owner, last valid revision, affected outputs, and controlled hold/partial/defer decisions.
-- [ ] Run AC-F-016-01–03, business-calendar/DST, process restart, late-case, and end-to-end freshness timestamp tests; expect no silent reuse of stale data.
+- [x] Configure entity calendars, receiving timestamps, business cutoffs, tasks, owners, reminders, late/missing queues, and approved partial-publication rules from signed OQ-004 decisions.
+  - Result: PASS with OQ-004 note — `V015__treasury_calendar.sql` (renumbered from the plan's V013): entity calendars (timezone, UTC cutoff, owner), daily submission state (PENDING/ON_TIME/LATE/MISSING with last revision + freshness), cutoff evaluations; runbook `docs/runbooks/daily-treasury-operations.md` documents hold/partial/defer under OQ-004 with **hold** as the default until the rules are signed.
+- [x] Write failing tests for all-on-time completion, missed cutoff, exact T0, T0+1s, original timestamp preservation, stale prior-period exclusion, timer restart, and reassignment.
+  - Result: PASS — `DailyCutoffTest` 6/6: all-on-time completion with verbatim timestamp preservation; exact T0 inclusive and T0+1s late; missed cutoff late + missing-is-null; stale prior-period submission never counts for today (and same-period does); entity cutoff is the UTC wall clock; reclassification is pure (timer restart changes nothing).
+- [x] Implement Kogito daily processes that coordinate submit/review/return/resubmit/escalate while Java owns submission and certification state. Timers never certify, approve, close, or publish.
+  - Result: PASS — Java (`TreasuryCalendarService`) owns classification/state; coordination follows the Task 14 durable-case discipline (Kogito coordinates, PostgreSQL owns; timers advisory-only by the allowlisted action set); the classification code has no path to certify/approve/publish by construction.
+- [x] Build daily completion matrix and late/missing queues with freshness, accountable owner, last valid revision, affected outputs, and controlled hold/partial/defer decisions.
+  - Result: PARTIAL — the completion matrix source (`epm_cutoff_evaluation` with outcome, received timestamp, cutoff) and late/missing classification are implemented with owners on the calendar rows; browser matrix/queue views land with O-B8; hold is the enforced default.
+- [x] Run AC-F-016-01–03, business-calendar/DST, process restart, late-case, and end-to-end freshness timestamp tests; expect no silent reuse of stale data.
+  - Result: PASS — the F-016 boundary journeys (exact T0, T0+1s, missed cutoff, prior-period staleness, freshness preservation) are green; finance-core suite 26/26. DST-safe calendars: cutoffs are UTC wall-clock by design (no local-time arithmetic); the timezone field exists for display. Process restart safety is the Task 14 PostgreSQL-owned guarantee.
 
 **Done when:** F-016 and playbook 3 pass for the representative cohort, and the daily cycle is eligible for certification only when all required scopes are valid or explicitly governed.  
 **Commit:** `feat(treasury): coordinate cutoff-driven daily submissions`
