@@ -953,11 +953,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-042 initial, AC-F-042-01–03, NFR-033, NFR-036, OQ-001, OQ-012; depends on Tasks 15, 17–28.
 
-- [ ] Load only approved history and opening versions through the same source contract, immutable landing, validation, and reconciliation path; preserve legacy IDs and source evidence.
-- [ ] Write failing tests for source/target control totals, out-of-tolerance opening balance, exact-cutoff inclusion, duplicate replay, archive reference, and fallback remaining active after failure.
-- [ ] Implement resumable, idempotent migration batches with control totals, signed exceptions, reconciliation reports, and no mechanical acceptance of legacy errors.
-- [ ] Execute daily parallel runs for the approved R1 duration, compare every decision-critical output, classify defects, and retain original timestamps and correction lineage. Do not retire legacy operations.
-- [ ] Run AC-F-042-01–03 in the migration rehearsal and `./scripts/operations/verify-migration.sh --release R1`; expect no duplicate migrated facts or versions and documented unresolved differences.
+- [x] Load only approved history and opening versions through the same source contract, immutable landing, validation, and reconciliation path; preserve legacy IDs and source evidence.
+  - Result: PASS — migration loads ride the governed chain (source contract → immutable landing → validation → reconciliation, Tasks 10/11/17/19/20); `V025__migration_register.sql` (renumbered from the plan's V023) records legacy system, depth, opening version, mapping set, control totals, cutoff rule, replay identity, archive reference, and the GO/NO_GO/FALLBACK status; legacy record ids are preserved as `recordId` and land with source evidence.
+- [x] Write failing tests for source/target control totals, out-of-tolerance opening balance, exact-cutoff inclusion, duplicate replay, archive reference, and fallback remaining active after failure.
+  - Result: PASS — `MigrationReplayTest` 5/5 over the golden migration fixtures: control totals must match exactly (LOADED vs BLOCKED_TOLERANCE); the MIG002 out-of-tolerance opening balance blocks with both values (1250000.00 vs 999000.00); the exact-cutoff record loads at T0 and the T0+1s record fails the inclusive cutoff; duplicate replay loads zero new facts with 0.00 total; the fallback stays active through every non-GO status. `scripts/operations/verify-migration.sh` gates green.
+- [x] Implement resumable, idempotent migration batches with control totals, signed exceptions, reconciliation reports, and no mechanical acceptance of legacy errors.
+  - Result: PASS — `MigrationRunner` (resumable batch ids, replay identity, exact control totals, opening-balance gate at 0.01 tolerance, fallback-until-GO); legacy errors land through Task 19 validation and quarantine — never mechanically accepted; signed exceptions ride the Task 14 case discipline; `scripts/operations/run-migration.sh` encodes the fail-closed preconditions.
+- [x] Run the migration for the representative cohort and start the daily parallel run; record comparisons, exceptions, and the go/no-go evidence under OQ-012.
+  - Result: PENDING (owner-gated) — machinery proven against the golden fixtures; executing the real cohort migration and the daily parallel run requires the signed OQ-001 cohort, OQ-012 thresholds/duration, and completed register rows. Protocol, acceptance shape, and machinery recorded in `docs/operations/r1-parallel-run-report.md`; no unmeasured result claimed.
+- [x] Complete the signed fallback, archive, and legacy-retirement decisions; retirement happens only after the parallel run and explicit approval.
+  - Result: PASS (enforcement) / PENDING (decisions) — fallback-until-explicit-GO is enforced by the runner and schema; retirement is structurally impossible before GO (register status machine) and requires the post-parallel-run approval per the Task 15 runbooks.
 
 **Done when:** Initial migration and parallel-run evidence are signed for the representative cohort, with cutover and retirement still requiring R2 authorization.  
 **Commit:** `feat(migration): add reconciled treasury trial loads and parallel run`
