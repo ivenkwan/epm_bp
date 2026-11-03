@@ -18,6 +18,7 @@
     <module>services/finance-reporting</module>
     <module>services/finance-admin</module>
     <module>tests/integration</module>
+    <module>tests/performance</module>
   </modules>
 
   <properties>

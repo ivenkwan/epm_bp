@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { SessionState, useSession } from '../app/session';
 import { SubmissionLookup } from '../app/SubmissionLookup';
+import { LiquidityContextPanel } from '../features/liquidity-context/LiquidityContextPanel';
 import { ErrorBanner } from '../components/ErrorBanner';
 
 /**
@@ -86,6 +87,7 @@ export function AppShell(): ReactNode {
             </p>
             <StatusSlot label="Certification" value="Not yet available" />
             <StatusSlot label="Freshness" value="Not yet available" />
+            <LiquidityContextPanel enabled={false} />
           </section>
         )}
       </main>
