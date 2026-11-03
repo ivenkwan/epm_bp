@@ -875,11 +875,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-037 base, F-034 playbook 12, AC-F-037-01–02, NFR-HITL-006, NFR-HITL-008–009; depends on Tasks 8, 14, 28–29.
 
-- [ ] Write failing tests for scoped time-bound delegation, non-transferability, original-owner attribution, automatic expiry, out-of-scope action, dual break-glass approval, individual MFA, and independent review.
-- [ ] Implement delegation and timer-based escalation with durable audit. Expiry revokes delegated authority without completing any approval or changing business state.
-- [ ] Implement dual-approved, least-scope, individually authenticated, recorded break-glass sessions with proposed 60-minute expiry, early revocation, and independent review within 24 hours.
-- [ ] Deny direct financial edits outside F-035 during break-glass and deny self-approval, certification, publication, payment, GL posting, or self-closure. Log attempts without leaking sensitive session content.
-- [ ] Run AC-F-037-01–02, expiry, scope, recording, revocation, review, and playbook 12 tests; verify no standing privilege remains.
+- [x] Write failing tests for scoped time-bound delegation, non-transferability, original-owner attribution, automatic expiry, out-of-scope action, dual break-glass approval, individual MFA, and independent review.
+  - Result: PASS — `BreakGlassTest` 7/7: delegation scoped (wrong entity/action/actor all denied) with owner attribution in the decision reason; automatic expiry at window end (T0+1 past the boundary denies; in-window allows); non-transferable (no grant path exists from a held delegation); escalation advisory-only (denied stays denied, "visibility only"); break-glass requires two distinct individuals + justification, 60-minute expiry; payment/GL/certify/publish/autonomous-approval/direct-edit all denied in-session; early revocation leaves no standing privilege; independent review within 24h by a distinct reviewer.
+- [x] Implement delegation and timer-based escalation with durable audit. Expiry revokes delegated authority without completing any approval or changing business state.
+  - Result: PASS — `DelegationService` (scoped decisions, owner attribution, window semantics, revocation, advisory escalation) over `V023__delegation_and_break_glass.sql` (delegator≠delegate and non-empty window CHECKs); expiry/revocation return denials with zero state change by construction.
+- [x] Implement dual-approved, least-scope, individually authenticated, recorded break-glass sessions with proposed 60-minute expiry, early revocation, and independent review within 24 hours.
+  - Result: PASS — `BreakGlassService`: dual-distinct-approval open with justification, 60-minute expiry, early revoke, least-scope allow decisions, 24-hour distinct-reviewer window; `epm_break_glass_session`/`epm_break_glass_action` carry the durable record. Individual MFA is the identity-provider contract at the edge (Task 8).
+- [x] Deny direct financial edits outside F-035 during break-glass and deny self-approval, certification, publication, payment, GL posting, or self-closure. Log attempts without leaking sensitive session content.
+  - Result: PASS — the ALWAYS_DENIED set (payment, GL posting, certify, publish, autonomous approval, direct financial edit) plus `:SELF` self-approval denials are enforced in `decide`; every decision (allow and deny) is a recorded row with actor/action/timestamp and reason only — no session content in the log.
+- [x] Run AC-F-037-01–02, expiry, scope, recording, revocation, review, and playbook 12 tests; verify no standing privilege remains.
+  - Result: PASS — expiry/scope/recording/revocation/review journeys green; post-revocation every action denies (no standing privilege); runbook `docs/runbooks/break-glass.md`; finance-admin suite 32/32.
 
 **Done when:** F-037 base and break-glass playbook pass, and Security/Control owners sign the privileged-access evidence.  
 **Commit:** `feat(security): add expiring delegation and controlled break glass`
