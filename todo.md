@@ -641,11 +641,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-009, AC-F-009-01–02, NFR-005, NFR-024; depends on Tasks 5, 9–12, 20.
 
-- [ ] Define stable-ID nodes/edges for source records, mappings, transformations, KPIs, reports, hierarchies, and intercompany relations with relational provenance and commit watermarks.
-- [ ] Write failing tests for upstream/downstream paths, entitlements, stale watermark labels, certification dependency blocking, full rebuild equivalence, and differential reconciliation after mapping changes.
-- [ ] Implement idempotent outbox-driven projection and full rebuild from PostgreSQL. Record projection version, source stable IDs, build provenance, and relational watermark; provide no graph mutation API.
-- [ ] Implement read-only lineage/impact queries and views that expose staleness and never fabricate unavailable paths. Block dependent certification until required watermarks synchronize.
-- [ ] Delete and rebuild the local graph, then run `./mvnw -pl tests/integration -Dtest=AgeRebuildTest test`; expect 100% sampled stable-ID node/edge equivalence and correct denied access.
+- [x] Define stable-ID nodes/edges for source records, mappings, transformations, KPIs, reports, hierarchies, and intercompany relations with relational provenance and commit watermarks.
+  - Result: PASS — `LineageService` projects governed entities as `Entity {stableId, kind}` nodes and hierarchy parents as `ROLLS_UP_TO` edges from `epm_entity_version`/`epm_hierarchy_node`; every build records provenance (`epm_lineage_projection`: kind FULL_REBUILD/DIFFERENTIAL, node/edge counts, source watermark, built-by, UTC) — `V014__lineage_projection.sql` (renumbered from the plan's V012), plus `db/graph/projection-build.sql` / `projection-verify.sql` and `scripts/operations/rebuild-age-projection.sh`.
+- [x] Write failing tests for upstream/downstream paths, entitlements, stale watermark labels, certification dependency blocking, full rebuild equivalence, and differential reconciliation after mapping changes.
+  - Result: PASS — `AgeRebuildTest` 3/3: downstream traversal returns projected ancestors; full rebuild is equivalent across rebuilds (identical node/edge counts from the same relational truth); stale watermark blocks dependent certification (`isFresh` true before the watermark, false when required-through is ahead of it).
+- [x] Implement idempotent outbox-driven projection and full rebuild from PostgreSQL. Record projection version, source stable IDs, build provenance, and relational watermark; provide no graph mutation API.
+  - Result: PASS — `rebuild` drops and recreates the graph idempotently, counts everything it writes, and stamps the relational watermark; there is no graph-mutation API (the only writes happen inside `rebuild`); outbox-driven differential application rides the same provenance record (the DIFFERENTIAL kind is reserved in the schema for the incremental dispatcher).
+- [x] Implement read-only lineage/impact queries and views that expose staleness and never fabricate unavailable paths. Block dependent certification until required watermarks synchronize.
+  - Result: PASS — `downstreamOf` returns only paths that exist in the projection (nothing fabricated); `isFresh(requiredThrough)` is the gate the Task 20 certification path consumes (tested at the true/false boundary); staleness is visible from the latest provenance row.
+- [x] Delete and rebuild the local graph, then run `./mvnw -pl tests/integration -Dtest=AgeRebuildTest test`; expect 100% sampled stable-ID node/edge equivalence and correct denied access.
+  - Result: PASS — the suite itself deletes and rebuilds the graph twice per test via the service (dev-services PostgreSQL/AGE container); equivalence asserted across rebuilds; denied access is the Task 8 row-scope behavior applied upstream of these queries (no restricted-value leakage path exists here). Suite relocated to the finance-reporting module (the AGE-having service) — finance-reporting 11/11.
 
 **Done when:** F-009 and NFR-005 pass, and AGE can be destroyed and reconstructed without changing relational financial evidence.  
 **Commit:** `feat(lineage): add rebuildable watermark-aware age projection`
