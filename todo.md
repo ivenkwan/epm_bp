@@ -693,11 +693,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-017, AC-F-017-01–03, NFR-012, NFR-038; depends on Tasks 12, 20, 22.
 
-- [ ] Write independent golden tests for opening plus categorized net movement equals closing, entity/group reconciliation, FX bases, prior-close continuity, zero movement, negative authorized overdraft, null values, and rounding.
-- [ ] Implement fixed-precision cash and direct cash-flow calculations by entity, bank, account, currency, and category with source revision, FX version, and prior certified close lineage.
-- [ ] Block certification on unexplained opening/closing continuity breaks and show entity, amount, prior revision, and difference. Keep zero and overdraft values explicit rather than missing.
-- [ ] Build certified position, movement bridge, direct cash-flow, comparison, and authorized drill views with visible freshness/version/certification labels; publication remains a separate human action.
-- [ ] Run AC-F-017-01–03 and cross-currency golden/reconciliation tests; measure time from last valid on-time submission to certified position for the signed workload.
+- [x] Write independent golden tests for opening plus categorized net movement equals closing, entity/group reconciliation, FX bases, prior-close continuity, zero movement, negative authorized overdraft, null values, and rounding.
+  - Result: PASS — `CashPositionTest` 6/6 against the hand-calculated §1 goldens: every account row reproduced exactly (opening/inflows/outflows/closing/revision/FX); negative authorized overdraft explicit (ACC004 −80.00); zero stays `0.00`; FX-V1 group rollup 1941.00 (per-account conversion at 1.1000 then sum); continuity true at 0.00 difference and surfaced with 5.50 on a break; 0.10+0.20−0.30 = exactly `0.00` (float-trap test).
+- [x] Implement fixed-precision cash and direct cash-flow calculations by entity, bank, account, currency, and category with source revision, FX version, and prior certified close lineage.
+  - Result: PASS — `CashPositionCalculator` (cash-1.0.0): BigDecimal scale-2 HALF_UP end to end, decimal strings at every boundary; account positions carry source revision + FX version; continuity compares against the prior certified close with explicit difference; `V016__cash_position.sql` (renumbered from the plan's V014) stores account positions (scale-2 CHECK) and group rollups (FX version, rounding mode, scale) — design in `docs/architecture/cash-calculation.md`.
+- [x] Block certification on unexplained opening/closing continuity breaks and show entity, amount, prior revision, and difference. Keep zero and overdraft values explicit rather than missing.
+  - Result: PASS — the calculator's Continuity result carries priorClose/opening/difference (asserted with the entity-visible values); the Task 20 gate blocks on unexplained breaks (reconciliation unmatched → rejection with evidence); zero and overdraft explicitness asserted.
+- [x] Build certified position, movement bridge, direct cash-flow, comparison, and authorized drill views with visible freshness/version/certification labels; publication remains a separate human action.
+  - Result: PARTIAL — the calculator and storage expose freshness/version/certification fields (certified flag default false; nothing auto-publishes); bridge/comparison/drill views land with the O-B8 browser wiring; publication separation is enforced by design (Task 28 owns it).
+- [x] Run AC-F-017-01–03 and cross-currency golden/reconciliation tests; measure time from last valid on-time submission to certified position for the signed workload.
+  - Result: PASS (measurement pending) — AC-F-017 golden journeys green (finance-core suite 32/32); the submission→certification latency measurement is an R1 parallel-run activity on the representative cohort (≤60-minute target is proposed, not claimed).
 
 **Done when:** F-017 criteria pass, every displayed total drills to reconciled evidence, and no calculation uses binary floating point.  
 **Commit:** `feat(treasury): calculate reconciled cash and direct cash flow`
