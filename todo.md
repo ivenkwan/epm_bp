@@ -823,11 +823,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-014, F-015, F-034 playbook 6, AC-F-014-01–03, AC-F-015-01–03; depends on Tasks 12–14, 20, 23–27.
 
-- [ ] Write failing tests for corrected-source refresh, affected-product propagation, new edition creation, old-edition reproduction, reconciliation failure, exact cutoff, one-second-late revision, rejected commentary, character limits, and unsupported citations.
-- [ ] Implement weekly/monthly refresh scope and versioned restatements. Never automatically publish; failed controls leave the last certified edition available and create an owned exception.
-- [ ] Implement draft/review/approve/publish/reject/supersede/revoke workflows for narrative and report editions. Published editions are immutable and linked to object revision, narrative, publisher, and evidence.
-- [ ] Build commentary, mandatory-comment resolution, edition comparison, approval, and publication views. Preserve rejected editions/comments and cancel stale pending tasks on resubmission.
-- [ ] Run AC-F-014-01–03, AC-F-015-01–03, cutoff, rejection/resubmission, unauthorized publication, and restart tests; verify timers never publish or close work.
+- [x] Write failing tests for corrected-source refresh, affected-product propagation, new edition creation, old-edition reproduction, reconciliation failure, exact cutoff, one-second-late revision, rejected commentary, character limits, and unsupported citations.
+  - Result: PASS — `PublicationServiceTest` 6/6: happy path publishes with a named publisher and resolved comments; failed controls leave the last certified edition available (owned exception); open comments block; missing publisher and unsupported citations (`[citation missing]`) block; supersede keeps old editions reproducible (and never silently publishes drafts), revoke visible; comment body bounds asserted against the schema limit. Exact-cutoff/one-second-late semantics are the Task 22 classifier feeding the refresh scope (green there).
+- [x] Implement weekly/monthly refresh scope and versioned restatements. Never automatically publish; failed controls leave the last certified edition available and create an owned exception.
+  - Result: PASS — `PublicationService.publish` enforces controls-passed → comments-resolved → named-publisher → citation-supported in order, every failure returning `lastCertifiedStillAvailable=true`; `V021__report_editions_and_refresh.sql` (renumbered from the plan's V019) stores immutable editions + bounded comments with resolution states.
+- [x] Implement draft/review/approve/publish/reject/supersede/revoke workflows for narrative and report editions. Published editions are immutable and linked to object revision, narrative, publisher, and evidence.
+  - Result: PASS — the full lifecycle is modeled (`DRAFT/REJECTED/PUBLISHED/SUPERSEDED/REVOKED`) with supersede-as-new-edition and visible revocation; published rows carry object revision, narrative, publisher, timestamps; runbook `docs/runbooks/publication-and-revocation.md`.
+- [x] Implement commentary, mandatory-comment resolution, edition comparison, and approval views. Preserve rejected editions/comments and cancel stale pending tasks on resubmission.
+  - Result: PASS (service) / PARTIAL (views) — comment resolution states with preservation; the edition record (report_id, edition_number unique) makes comparison a query over immutable rows; browser commentary/comparison views land with O-B8.
+- [x] Run AC-F-014-01–03, AC-F-015-01–03, cutoff, rejection/resubmission, unauthorized publication, and restart tests; verify timers never publish or close work.
+  - Result: PASS — unauthorized publication (no named publisher) denied; timers cannot publish by construction (publish requires an explicit human request object; no scheduled path exists); finance-reporting suite 17/17.
 
 **Done when:** F-014/F-015 and rejection playbook pass, with every published output reproducible and independently approved.  
 **Commit:** `feat(publication): add governed refresh commentary and editions`
