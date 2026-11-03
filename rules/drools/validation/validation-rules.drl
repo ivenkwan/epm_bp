@@ -4,7 +4,7 @@ package rules.validation;
 // Deterministic, terminating, side-effect free: violations only mark the fact.
 dialect "java"
 
-import dev.epm.tests.rules.LandedRow;
+import dev.epm.integration.validation.LandedRow;
 
 rule "completeness: null amount is quarantined"
 when
