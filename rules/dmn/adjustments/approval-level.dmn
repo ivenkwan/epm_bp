@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
+             xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/"
+             xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/"
+             id="adjustment-approval" name="adjustment-approval"
+             namespace="https://epm.dev/rules/adjustment">
+  <inputData id="materialityInput" name="materiality">
+    <variable id="materialityVar" name="materiality" typeRef="number"/>
+  </inputData>
+  <decision id="approvalLevel" name="Approval Level">
+    <variable id="approvalLevelVar" name="Approval Level" typeRef="string"/>
+    <informationRequirement id="reqMateriality">
+      <requiredInput href="#materialityInput"/>
+    </informationRequirement>
+    <decisionTable id="approvalLevelTable" hitPolicy="FIRST">
+      <input id="materialityCol" label="Materiality (absolute amount)">
+        <inputExpression id="materialityExpr" typeRef="number">
+          <text>materiality</text>
+        </inputExpression>
+      </input>
+      <output id="levelOut" label="Level" name="level" typeRef="string"/>
+      <rule id="rOwner">
+        <description>Below 1000.00: owner review.</description>
+        <inputEntry id="rOwnerIn"><text>&lt;1000.00</text></inputEntry>
+        <outputEntry id="rOwnerOut"><text>"OWNER_REVIEW"</text></outputEntry>
+      </rule>
+      <rule id="rIndependent">
+        <description>1000.00 to below 10000.00: independent entity approver.</description>
+        <inputEntry id="rIndepIn"><text>[1000.00..10000.00)</text></inputEntry>
+        <outputEntry id="rIndepOut"><text>"INDEPENDENT_APPROVER"</text></outputEntry>
+      </rule>
+      <rule id="rDomain">
+        <description>10000.00 and above: domain approver plus certifier.</description>
+        <inputEntry id="rDomainIn"><text>&gt;=10000.00</text></inputEntry>
+        <outputEntry id="rDomainOut"><text>"DOMAIN_APPROVER_PLUS_CERTIFIER"</text></outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="adjustmentDiagram">
+      <dmndi:DMNShape id="shapeApproval" dmnElementRef="approvalLevel">
+        <dc:Bounds x="100" y="100" width="180" height="80"/>
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

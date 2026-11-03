@@ -46,6 +46,18 @@
       <artifactId>drools-compiler</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- Shared validation fact class (dev.epm.integration.validation.LandedRow). -->
+    <dependency>
+      <groupId>dev.epm</groupId>
+      <artifactId>finance-integration</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>io.quarkus</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     <dependency>
       <groupId>org.drools</groupId>
       <artifactId>drools-mvel</artifactId>

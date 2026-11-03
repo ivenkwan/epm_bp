@@ -3,6 +3,7 @@ package dev.epm.tests.rules;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import dev.epm.integration.validation.LandedRow;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;

@@ -1,8 +1,8 @@
-package dev.epm.tests.rules;
+package dev.epm.integration.validation;
 
 import java.math.BigDecimal;
 
-/** Landed-row fact for the validation rule set (test-scoped fixture fact). */
+/** Landed-row fact evaluated by the validation rule set (val-1.0.0). */
 public class LandedRow {
 
     private String rowId;
