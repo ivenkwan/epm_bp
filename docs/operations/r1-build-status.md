@@ -6,7 +6,7 @@ O-B6 unblock, recorded as work completes. Human sign-offs live in
 
 | Task | Scope | Result | Evidence |
 |---|---|---|---|
-| — | O-B6 durable-job runtime (Task 6 deferred contract) | PASS | `JobService`/`JobEntity` in finance-integration (Panache); `JobServiceTest` 1/1: replay returns the same job, exactly-once claim (QUEUED→RUNNING counter), scheduler-driven worker |
+| O-B6 | Durable-job runtime (Task 6 deferred contract) | RESOLVED | `JobService`/`JobEntity` in finance-integration (Panache); `JobServiceTest` 1/1: replay returns the same job, exactly-once claim (QUEUED→RUNNING counter), scheduler-driven worker |
 | 17 | Scheduled ingestion with replay safety | PASS | `V010` ingestion runs (unique schedule+batch identity); `ScheduledIngestionTest` 5/5 (due-run lands with freshness; duplicate extract → original run, one payload, no duplicate facts; zero rows → completeness exception; operator replay idempotent + named-operator required; connector allowlist closed) |
 | 18 | Template intake + controlled resubmission | PASS (benchmarks pending) | `V011` template submissions (anchor+revision, row errors); `TemplateSubmissionServiceTest` 5/5 (valid lands; coordinate errors; header mismatch rejected pre-rows; exact-max accepted / max+1 rejected pre-parse; corrected resubmission = revision 2 with original preserved) |
 | 19 | Deterministic validation + quarantine | PASS | `V012` validation runs + quarantine rows; `ValidationBoundaryTest` 4/4 (adversarial fixtures quarantined with rule/expected/actual/explanation; zero + negative-payment pass; reproducible by version; duplicate natural key row 2); validation fact shared with the R0 governance suite |
@@ -20,7 +20,11 @@ O-B6 unblock, recorded as work completes. Human sign-offs live in
 | 27 | Rolling cash forecast | PASS (OQ-005 values pending) | `RollingForecastTest` 5/5 (roll-forward exactly once, prior-close linkage rejects mismatch, not-yet-due untouched, variance, empty-schedule rejection); `cash-forecast-model.md` |
 | 28 | Refresh/commentary/republication | PASS | `V021` editions + comments; `PublicationServiceTest` 6/6 (named publisher, resolved comments, failed controls leave last certified available, citation rejection, supersede/revoke semantics); runbook |
 | 29 | Adjustment ledger four-eyes | PASS | `V022` ledger; `AdjustmentControlTest` 5/5 (balance, four-eyes, materiality boundaries 999.99/1000.00/9999.99/10000.00, DMN agreement, reversal net-zero); approval-level DMN |
-| 30 | R1 evidence gate | PASS with sign-offs open | Reactor 157/0/0; all four quality gates PASS; fixture manifest 39 digests; platform smoke 5/5; frontend 15/15 + build; e2e 7/7; `verify-release.sh --release R1` PASS; golden fidelity table §-by-§ in the evidence pack |
+| 30 | Delegation, escalation, break-glass | PASS | `V023`; `BreakGlassTest` 7/7 (scoped time-bound delegation w/ owner attribution, auto-expiry, non-transferable, advisory escalation; dual-distinct break-glass approval, 60-min expiry, financial actions denied in-session, early revocation, no standing privilege, 24h independent review); runbook |
+| 31 | Governed exports + action register | PASS | `V024`; `ExportEntitlementTest` 4/4 (edition/watermark/correlation headers, exact figures, distribution-time re-authorization, row-limit refusal w/o truncation, evidence + independent verification); runbook |
+| 32 | Integrated responsive journeys | PASS with O-B8/O-B7 open | e2e `integrated-journeys.spec.ts` 4/4 on the delivered shell; full role journeys await admin wiring; entitlement/denial/staleness covered at the service layer |
+| 33 | Migration register + parallel-run base | PASS (run owner-gated) | `V025`; `MigrationReplayTest` 5/5 (exact control totals, tolerance blocker w/ both values, T0 inclusive cutoff, T0+1s excluded, replay zero-facts, fallback-until-GO); run/verify scripts; parallel-run report |
+| 34 | R1 performance/G1 evidence gate | PASS w/ R1-M1 + sign-offs open | Reactor 173/0/0 + platform smoke 5/5 + e2e 11/11 + all six quality/recovery gates PASS; `verify-release.sh --release R1` PASS; `verify-r1-recovery.sh` PASS; G1 decision template + human-input table recorded; no unmeasured claim |
 
 ## Open items (carried)
 
