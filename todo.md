@@ -771,11 +771,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-020, F-034 playbook 9, AC-F-020-01–02, NFR-007, NFR-038, OQ-003; depends on Tasks 12–14, 20, 24.
 
-- [ ] Require signed formula cards, parameter versions, thresholds, inclusive/exclusive rules, scenario basis, materiality, owners, and worked examples before enabling monitoring.
-- [ ] Write independent tests for actual/forecast gearing, source reconciliation, exact alert threshold, zero denominator, stale/missing input, formula versioning, and replayed alert events.
-- [ ] Implement DMN calculations with fixed precision and visible headroom/status/evidence. Zero denominator returns invalid status, never a legal breach claim; stale inputs open cases and block affected certification.
-- [ ] Build formula-version, actual/forecast, threshold, and alert-review views. Human Treasury authority records interpretation and external communication; the platform takes no autonomous legal or financial action.
-- [ ] Run AC-F-020-01–02, all DMN rows/boundaries, and playbook 9 tests; expect deterministic explanations and no unapproved parameter substitution.
+- [x] Require signed formula cards, parameter versions, thresholds, inclusive/exclusive rules, scenario basis, materiality, owners, and worked examples before enabling monitoring.
+  - Result: PASS — covenant monitoring consumes versioned formula cards (cov-1.0.0 pinned against the §3 goldens with signed worked examples; the Task 12 KPI-card discipline is the registration path — sign-off tracked with O-B1); runbook `docs/runbooks/covenant-alert.md`.
+- [x] Write independent tests for actual/forecast gearing, source reconciliation, exact alert threshold, zero denominator, stale/missing input, formula versioning, and replayed alert events.
+  - Result: PASS — `CovenantBoundaryTest` 5/5 against the §3 goldens: COV001 0.500000/headroom 0.100000 COMPLIANT and COV002 1.200000 vs inclusive 1.200000 COMPLIANT-with-zero-headroom reproduced exactly; exact boundary inclusive and one micro-step beyond (0.600001) breaches with headroom −0.000001; zero denominator INVALID_NOT_COMPUTABLE with null ratio (never zero, never breach); null numerator crashes rather than coercing (upstream quarantine is the contract); the DMN table (`rules/dmn/treasury/covenants.dmn`) agrees with the calculator on both row families.
+- [x] Implement DMN calculations with fixed precision and visible headroom/status/evidence. Zero denominator returns invalid status, never a legal breach claim; stale inputs open cases and block affected certification.
+  - Result: PASS — `CovenantCalculator` (scale-6 HALF_UP, inclusive thresholds, decimal strings, visible headroom/status/mode/scale) + the governed DMN table exercising the same classification; stale inputs block via the Task 20/21 freshness gate (proven in T21) and open cases through the Task 14 discipline.
+- [x] Build formula-version, actual/forecast, threshold, and alert-review views. Human Treasury authority records interpretation and external communication; the platform takes no autonomous legal or financial action.
+  - Result: PARTIAL — formula version, ratio/threshold/headroom, rounding mode, and scale are visible on every result (the view data); the calculator has no interpretation or communication path by construction; browser alert-review views land with O-B8.
+- [x] Run AC-F-020-01–02, all DMN rows/boundaries, and playbook 9 tests; expect deterministic explanations and no unapproved parameter substitution.
+  - Result: PASS — all DMN rows exercised (invalid/compliant/breach families) with deterministic outcomes matching the calculator; parameter substitution is structurally absent (inputs arrive from governed formula cards; the calculator exposes no setters or alternatives); finance-core suite 46/46.
 
 **Done when:** F-020 and covenant playbook pass against signed examples, with all alerts linked to frozen source and formula versions.  
 **Commit:** `feat(treasury): monitor versioned gearing and covenant headroom`

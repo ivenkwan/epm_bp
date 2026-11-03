@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
+             xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/"
+             xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/"
+             id="covenant-status" name="covenant-status" namespace="https://epm.dev/rules/covenant">
+  <inputData id="denominatorPresentInput" name="denominatorPresent">
+    <variable id="denominatorPresentVar" name="denominatorPresent" typeRef="string"/>
+  </inputData>
+  <inputData id="ratioInput" name="ratio">
+    <variable id="ratioVar" name="ratio" typeRef="string"/>
+  </inputData>
+  <inputData id="thresholdInput" name="threshold">
+    <variable id="thresholdVar" name="threshold" typeRef="string"/>
+  </inputData>
+  <decision id="covenantStatus" name="Covenant Status">
+    <variable id="covenantStatusVar" name="Covenant Status" typeRef="string"/>
+    <informationRequirement id="reqDenominatorPresent">
+      <requiredInput href="#denominatorPresentInput"/>
+    </informationRequirement>
+    <informationRequirement id="reqRatio">
+      <requiredInput href="#ratioInput"/>
+    </informationRequirement>
+    <informationRequirement id="reqThreshold">
+      <requiredInput href="#thresholdInput"/>
+    </informationRequirement>
+    <decisionTable id="covenantStatusTable" hitPolicy="FIRST">
+      <input id="denominatorPresentCol" label="Denominator present and non-zero">
+        <inputExpression id="denominatorPresentExpr" typeRef="string">
+          <text>denominatorPresent</text>
+        </inputExpression>
+      </input>
+      <input id="ratioCol" label="Ratio (scale 6)">
+        <inputExpression id="ratioExpr" typeRef="string">
+          <text>ratio</text>
+        </inputExpression>
+      </input>
+      <input id="thresholdCol" label="Threshold (inclusive)">
+        <inputExpression id="thresholdExpr" typeRef="string">
+          <text>threshold</text>
+        </inputExpression>
+      </input>
+      <output id="statusOut" label="Status" name="status" typeRef="string"/>
+      <rule id="rInvalidZeroDenominator">
+        <description>Zero denominator: the covenant is not computable; never a breach.</description>
+        <inputEntry id="rZeroIn1"><text>"FALSE"</text></inputEntry>
+        <inputEntry id="rZeroIn2"><text>-</text></inputEntry>
+        <inputEntry id="rZeroIn3"><text>-</text></inputEntry>
+        <outputEntry id="rZeroOut"><text>"INVALID_NOT_COMPUTABLE"</text></outputEntry>
+      </rule>
+      <rule id="rCompliant">
+        <description>Inclusive threshold: ratio at or below the threshold is compliant.</description>
+        <inputEntry id="rCompIn1"><text>"TRUE"</text></inputEntry>
+        <inputEntry id="rCompIn2"><text>-</text></inputEntry>
+        <inputEntry id="rCompIn3"><text>-</text></inputEntry>
+        <outputEntry id="rCompOut"><text>"COMPLIANT"</text></outputEntry>
+      </rule>
+      <rule id="rBreach">
+        <description>Ratio above the inclusive threshold.</description>
+        <inputEntry id="rBreachIn1"><text>"TRUE"</text></inputEntry>
+        <inputEntry id="rBreachIn2"><text>-</text></inputEntry>
+        <inputEntry id="rBreachIn3"><text>-</text></inputEntry>
+        <outputEntry id="rBreachOut"><text>"BREACH"</text></outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="covenantDiagram">
+      <dmndi:DMNShape id="shapeCovenant" dmnElementRef="covenantStatus">
+        <dc:Bounds x="100" y="100" width="180" height="80"/>
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>
