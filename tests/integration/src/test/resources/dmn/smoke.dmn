@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20230324/MODEL"
+             xmlns:dmndi="https://www.omg.org/spec/DMN/20230324/DMNDI"
+             xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC"
+             id="toolchain-definitions"
+             name="toolchain"
+             namespace="https://kie.apache.org/dmn/toolchain">
+  <decision id="status-decision" name="status">
+    <variable name="status" typeRef="string" />
+    <literalExpression id="status-expression">
+      <text>"COMPATIBLE"</text>
+    </literalExpression>
+  </decision>
+</definitions>

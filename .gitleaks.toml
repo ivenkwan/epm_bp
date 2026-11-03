@@ -1,0 +1,9 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Exclude linked worktrees and local agent scratch from current-checkout scans"
+paths = [
+  '''^\.worktrees/''',
+  '''^\.superpowers/''',
+]
