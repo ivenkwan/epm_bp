@@ -1153,11 +1153,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-023, AC-F-023-01–03, NFR-026, NFR-038; depends on Tasks 9, 12, 20, 38.
 
-- [ ] Reuse governed planning dimensions and define transaction/local/group currency, approved FX versions, effective dates, rate types, scale, rounding, and reconciliation basis.
-- [ ] Write independent tests for local/group translation, missing effective rate, adjacent FX versions, zero local value, null values, precision boundaries, and entitlement-preserving currency views.
-- [ ] Implement deterministic conversion with exactly one applicable approved rate per currency/date/type; never substitute an unapproved rate or infer one from another period.
-- [ ] Build dimension/rate selection and translated analysis views with visible currency, FX version, scale, rounding, and missing-rate quality status.
-- [ ] Run AC-F-023-01–03 and FX golden/locale tests; expect zero to remain zero, declared rounding reconciliation, and blocked approval when required rates are absent.
+- [x] Reuse governed planning dimensions and define transaction/local/group currency, approved FX versions, effective dates, rate types, scale, rounding, and reconciliation basis.
+  - Result: `V028__planning_dimensions_and_fx.sql` (renumbered from plan V026) — governed dimensions/effective-dated members, currency definitions (TRANSACTION/LOCAL/GROUP + minor-unit scale), FX versions (CLOSING/AVERAGE/BUDGET, DRAFT/APPROVED/RETIRED, rounding mode + output scale), exact-key rate table; `finance-planning` upgraded to a full Quarkus service module (flyway + hibernate + kogito-dmn).
+- [x] Write independent tests for local/group translation, missing effective rate, adjacent FX versions, zero local value, null values, precision boundaries, and entitlement-preserving currency views.
+  - Result: `FxTranslationTest` 11/11 + `PlanningDimensionTest` 3/3 — every listed scenario covered including HALF_UP vs HALF_EVEN precision boundaries, per-line vs total rounding reconciliation (30.03/30.02/0.01 declared), duplicate/non-positive rate integrity violations, entitlement-preserving currency views (group always visible, unentitled labelled not leaked), and DMN/service agreement.
+- [x] Implement deterministic conversion with exactly one applicable approved rate per currency/date/type; never substitute an unapproved rate or infer one from another period.
+  - Result: `FxTranslationService.translate` — exact (version, currency-pair, effective-date) key match within APPROVED versions; adjacent-period inference, cross-version fallback, and unapproved substitution all fail closed with explicit quality notes; governed policy also encoded in `rules/dmn/planning/fx-translation.dmn` (NULL_INPUT/MISSING_RATE/UNAPPROVED_RATE/TRANSLATED).
+- [x] Build dimension/rate selection and translated analysis views with visible currency, FX version, scale, rounding, and missing-rate quality status.
+  - Result: `PlanningSetupPanel` in finance-web under a new Planning tab — per-line currency, FX version, scale, rounding, quality badge (Translated / Blocked: missing rate), group amount or Unavailable.
+- [x] Run AC-F-023-01–03 and FX golden/locale tests; expect zero to remain zero, declared rounding reconciliation, and blocked approval when required rates are absent.
+  - Result: zero→exactly 0.00 at declared scale, declared rounding difference reported never absorbed, MISSING_RATE/UNAPPROVED_RATE block (approval gating visible in the panel); FX worked examples = PENDING FP&A sign-off (owner-gated, no claim made).
 
 **Done when:** F-023 criteria pass and FP&A signs the shared dimensions, FX basis, and worked translation examples.  
 **Commit:** `feat(planning): add shared dimensions and governed fx translation`
