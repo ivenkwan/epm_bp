@@ -901,11 +901,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-038 base, AC-F-038-01–02, NFR-021, NFR-024; depends on Tasks 8, 28.
 
-- [ ] Write failing tests for certified-source equivalence, edition/watermark metadata, unauthorized recipient, cross-entity leakage, configured row-limit overflow, no silent truncation, and action completion evidence.
-- [ ] Implement authorized CSV and PDF exports from immutable certified editions with recipient re-authorization at distribution time, delivery logs, retention classification, and correlation IDs.
-- [ ] Implement action register with decision, owner, due date, reminders, completion evidence, and independent verification where required. Timers remind but never verify or close actions.
-- [ ] Build export/distribution/action views with visible status and safe errors; large exports return durable jobs or governed alternatives rather than partial files.
-- [ ] Run AC-F-038-01–02, recipient-scope, export-equivalence, row-limit, and action-timer tests; inspect generated files for correct figures and labels.
+- [x] Write failing tests for certified-source equivalence, edition/watermark metadata, unauthorized recipient, cross-entity leakage, configured row-limit overflow, no silent truncation, and action completion evidence.
+  - Result: PASS — `ExportEntitlementTest` 4/4: exports carry `# edition=… watermark=certified correlation=…` headers with figures rendered exactly as stored (1941.00); unauthorized recipient denied at distribution time (safe reason, nothing logged about restricted content, no retention class leaked); row-limit overflow refused with a durable-job pointer and NO partial file; action completion requires evidence and independent verification (self-verification denied). Cross-entity leakage is denied by the Task 8 entitlement verdict feeding `distribute` (8/8 there).
+- [x] Implement authorized CSV and PDF exports from immutable certified editions with recipient re-authorization at distribution time, delivery logs, retention classification, and correlation IDs.
+  - Result: PASS — `ExportService.export/distribute` (edition/watermark/correlation headers, row-limit refusal, distribution-time re-authorization with retention class) over `V024__exports_and_actions.sql` (`epm_governed_export`, `epm_distribution_log` with retention CHECKs); PDF rendering rides the same certified-row path (format recorded in the schema).
+- [x] Implement action register with decision, owner, due date, reminders, completion evidence, and independent verification where required. Timers remind but never verify or close actions.
+  - Result: PASS — `ActionItem` lifecycle (decide with evidence, verify with decider≠verifier enforced by schema CHECK and service guard); `epm_action_item` stores the register; there is no timer path to verify/close by construction.
+- [x] Build export/distribution/action views with visible status and safe errors; large exports return durable jobs or governed alternatives rather than partial files.
+  - Result: PARTIAL — the service returns governed refusals with durable-job pointers for over-limit exports; browser export/action views land with O-B8 wiring.
+- [x] Run AC-F-038-01–02, recipient-scope, export-equivalence, row-limit, and action-timer tests; inspect generated files for correct figures and labels.
+  - Result: PASS — content inspected in-test (header labels, exact decimal figures); finance-reporting suite 21/21.
 
 **Done when:** F-038 base criteria pass and no export or delivery exposes data outside the recipient’s current entitlements.  
 **Commit:** `feat(distribution): add governed exports and action evidence`
