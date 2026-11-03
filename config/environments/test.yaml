@@ -1,0 +1,45 @@
+# Non-secret test environment configuration. Values mirror dev with test-sized
+# resources; secrets are referenced by name only and created by the pipeline.
+
+platform:
+  cluster: kind://epm-finance
+  namespace: epm-system
+
+gateway:
+  base_url: http://localhost:28080
+  routes:
+    core: /api/v1/core
+    integration: /api/v1/integration
+
+identity:
+  provider: keycloak
+  base_url: http://localhost:28081
+  realm: epm
+  web_client_id: finance-web
+
+database:
+  host: postgres-age.epm-system.svc.cluster.local
+  port: 5432
+  database: epm
+  credentials_secret: postgres-credentials
+
+graph:
+  name: epm_lineage
+  rebuild_on_start: false
+
+telemetry:
+  otlp_endpoint: http://otel-collector.epm-system.svc.cluster.local:4317
+  metrics_url: http://localhost:28888/metrics
+
+limits:
+  gateway_rate_per_identity: 200
+  gateway_max_body_bytes: 2097152
+
+autoscaling:
+  api:
+    min_replicas: 2
+    max_replicas: 6
+    target_cpu_percent: 65
+  workers:
+    scale_on: queue_age_seconds
+    target: 30
