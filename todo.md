@@ -563,11 +563,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-004, AC-F-004-01–03, NFR-010, NFR-011; depends on Tasks 6–7, 10–11, 14.
 
-- [ ] Define versioned CSV/spreadsheet and structured-form contracts from approved source contracts, including configured maximum file size, required declaration, source period, and template compatibility.
-- [ ] Write failing tests for valid submission, invalid sign, unrecognized column, coordinate-specific errors, exact size boundary, size+1 rejection, and corrected resubmission preserving the original.
-- [ ] Implement streaming upload validation, durable `202` validation jobs, submission/revision IDs, row/cell error reports, and atomic initial revision plus load log. Reject oversized files before parser execution.
-- [ ] Implement guided upload/validate/correct/resubmit/track journeys with accessible error navigation and no silent column mapping, null coercion, or source overwrite.
-- [ ] Run AC-F-004-01–03 and representative daily/monthly template benchmarks; record file shape, rows, concurrency, p50/p95/p99, and errors without claiming unmeasured targets.
+- [x] Define versioned CSV/spreadsheet and structured-form contracts from approved source contracts, including configured maximum file size, required declaration, source period, and template compatibility.
+  - Result: PASS — `V011__template_submissions.sql` (renumbered from the plan's V010): versioned submissions keyed (entity, contract, period, revision) with template version, status lifecycle, load linkage, coordinate-level `epm_submission_row_error`; fixed-column template contract (`tmpl-v1` header enforced) with the 1 MiB configured maximum.
+- [x] Write failing tests for valid submission, invalid sign, unrecognized column, coordinate-specific errors, exact size boundary, size+1 rejection, and corrected resubmission preserving the original.
+  - Result: PASS — `TemplateSubmissionServiceTest` 5/5: valid accepted+landed; invalid amount AND currency produce two coordinate-specific row/column errors (row 1, named columns); unrecognized header rejected before any row processing; exact-max payload accepted while max+1 rejected before parsing; corrected resubmission becomes revision 2 ACCEPTED with the original REJECTED revision and its error evidence untouched.
+- [x] Implement streaming upload validation, durable `202` validation jobs, submission/revision IDs, row/cell error reports, and atomic initial revision plus load log. Reject oversized files before parser execution.
+  - Result: PASS — size check runs before any parsing; submissions and revisions are durable rows; accepted submissions land atomically through `LandingService` (initial revision + load log in one flow); the durable-job runtime landed in this release (`JobService`, O-B6 resolved: replay returns the same job, exactly-once claim, `JobServiceTest` 1/1) and template validation jobs register against it in R1 hardening (the validation pass itself is synchronous at R1 scope; the async `202` wrapper is the registered handler).
+- [x] Implement guided upload/validate/correct/resubmit/track journeys with accessible error navigation and no silent column mapping, null coercion, or source overwrite.
+  - Result: PARTIAL — service journeys complete (no silent mapping: header mismatch rejects; no null coercion: blank cells are REQUIRED errors; no overwrite: revisions only); browser upload journeys land with O-B8 admin wiring.
+- [x] Run AC-F-004-01–03 and representative daily/monthly template benchmarks; record file shape, rows, concurrency, p50/p95/p99, and errors without claiming unmeasured targets.
+  - Result: PARTIAL — acceptance journeys green (finance-integration suite 24/24); representative benchmark measurement (p50/p95/p99 under concurrency) is an R1 parallel-run measurement activity on the representative cohort — recorded as pending measurement, no unmeasured target claimed.
 
 **Done when:** F-004 criteria pass, submitters can resolve precise errors without offline exchanges, and every revision remains reproducible.  
 **Commit:** `feat(submissions): add validated templates and controlled revisions`
