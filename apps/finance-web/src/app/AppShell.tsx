@@ -3,6 +3,10 @@ import type { ReactNode } from 'react';
 import { SessionState, useSession } from '../app/session';
 import { SubmissionLookup } from '../app/SubmissionLookup';
 import { LiquidityContextPanel } from '../features/liquidity-context/LiquidityContextPanel';
+import {
+  MANAGEMENT_PACKS,
+  ManagementReportsPanel,
+} from '../features/management-reports/ManagementReportsPanel';
 import { ErrorBanner } from '../components/ErrorBanner';
 
 /**
@@ -87,6 +91,7 @@ export function AppShell(): ReactNode {
             </p>
             <StatusSlot label="Certification" value="Not yet available" />
             <StatusSlot label="Freshness" value="Not yet available" />
+            <ManagementReportsPanel packs={MANAGEMENT_PACKS} />
             <LiquidityContextPanel enabled={false} />
           </section>
         )}

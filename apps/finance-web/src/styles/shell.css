@@ -173,3 +173,40 @@ form button {
   color: #ffffff;
   cursor: pointer;
 }
+
+/* Task 39 management packs: governance labels and pack table. */
+.pack-table {
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+
+.pack-table th,
+.pack-table td {
+  border: 1px solid #5a6b86;
+  padding: 0.35rem 0.6rem;
+  text-align: left;
+}
+
+.pack-table caption {
+  text-align: left;
+  padding-bottom: 0.25rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.badge-ok {
+  background: #e6f4ea;
+  color: #135c2c;
+  border: 1px solid #135c2c;
+}
+
+.badge-blocked {
+  background: #fdecea;
+  color: #8a1c11;
+  border: 1px solid #8a1c11;
+}

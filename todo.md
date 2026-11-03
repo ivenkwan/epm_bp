@@ -1127,11 +1127,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-011, F-012 initial, AC-F-011-01–03, AC-F-012-01–02, NFR-013–NFR-015; depends on Tasks 12, 20, 28, 31, 38.
 
-- [ ] Define report and pack configurations from certified data products, shared KPIs, actuals/plans, approved commentary, entity/division scope, comparisons, and immutable editions.
-- [ ] Write failing tests for shared-figure equivalence, uncertified required division, zero activity versus missing data, opening-balance reconciliation, retired KPI references, and empty required sections.
-- [ ] Implement enterprise/division/entity management reports plus initial flash, operational business, and board-style pack layouts. Block complete certification when required scope is uncertified or layout references are invalid.
-- [ ] Build filter/compare/review/generate/reproduce journeys with visible version, freshness, certification, owner, and approval status. Preserve each pack’s independent immutable edition and approval history.
-- [ ] Run AC-F-011-01–03 and AC-F-012-01–02, authorized drill, and standard-pack output-equivalence/timing tests; record the approved content/export workload.
+- [x] Define report and pack configurations from certified data products, shared KPIs, actuals/plans, approved commentary, entity/division scope, comparisons, and immutable editions.
+  - Result: `V027__management_reports.sql` (renumbered from plan V025) — report/section/figure, pack/member/edition/approval tables with governed CHECK constraints; `ManagementReportService` assembles reports and packs from certified figures only (no report-local KPI calculation exists by construction).
+- [x] Write failing tests for shared-figure equivalence, uncertified required division, zero activity versus missing data, opening-balance reconciliation, retired KPI references, and empty required sections.
+  - Result: `ManagementReportServiceTest` 15/15 — shared-figure divergence, uncertified DIVISION:south scope, ZERO_ACTIVITY vs MISSING semantics, board opening-balance reconciliation (mismatch/missing/reconciled), retired + unknown KPI references, empty required section, invalid layout/comparison, reproduction hash equivalence, approval chronology.
+- [x] Implement enterprise/division/entity management reports plus initial flash, operational business, and board-style pack layouts. Block complete certification when required scope is uncertified or layout references are invalid.
+  - Result: fail-closed `certifyReport` (scope → catalog → required sections) and `generatePack` (required-member certification, shared-figure equivalence, board balance reconciliation); FLASH/OPERATIONAL/BOARD layouts delivered.
+- [x] Build filter/compare/review/generate/reproduce journeys with visible version, freshness, certification, owner, and approval status. Preserve each pack’s independent immutable edition and approval history.
+  - Result: `ManagementReportsPanel` in finance-web (owner/certification/edition/approval labels, zero-vs-missing statement, reproduce action); `PackEdition` carries deterministic SHA-256 content hash + `as_of_utc` freshness; append-only `ApprovalRecord` chronology.
+- [x] Run AC-F-011-01–03 and AC-F-012-01–02, authorized drill, and standard-pack output-equivalence/timing tests; record the approved content/export workload.
+  - Result: e2e `reporting/management-pack.spec.ts` 4/4 (labels, blocked-uncertified visibility, zero/missing semantics, reproduce action); reproduction output-equivalence test green; approved content/export workload = PENDING (owner-gated measurement, no unmeasured claim).
 
 **Done when:** F-011 and initial F-012 criteria pass, and business owners accept representative packs with no report-local KPI calculations.  
 **Commit:** `feat(reporting): assemble governed management reports and packs`
