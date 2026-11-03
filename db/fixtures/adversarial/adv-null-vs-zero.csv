@@ -1,0 +1,4 @@
+row_id,account_id,amount
+AROW1,ACC001,
+AROW2,ACC001,0.00
+AROW3,ACC003,10.00

@@ -1,0 +1,6 @@
+account_id,entity_id,bank_name,currency_code,account_type,effective_from,effective_to
+ACC001,ENT101,First Synthetic Bank,USD,OPERATING,2026-01-01,
+ACC002,ENT102,Second Synthetic Bank,EUR,OPERATING,2026-01-01,
+ACC003,ENT103,Third Synthetic Bank,USD,OPERATING,2026-01-01,
+ACC004,ENT101,First Synthetic Bank,USD,OVERDRAFT,2026-01-01,
+ACC005,ENT104,Fourth Synthetic Bank,USD,RESTRICTED,2026-01-01,

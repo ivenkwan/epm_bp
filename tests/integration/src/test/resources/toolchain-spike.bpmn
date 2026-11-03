@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             id="toolchain-spike-definitions"
+             targetNamespace="https://epm.dev/toolchain/spike">
+  <process id="toolchain_spike" name="Toolchain Spike Review" isExecutable="true" processType="Private">
+    <startEvent id="startSpike" name="Start"/>
+    <sequenceFlow id="flow1" sourceRef="startSpike" targetRef="reviewTask"/>
+    <userTask id="reviewTask" name="Independent Review"/>
+    <sequenceFlow id="flow2" sourceRef="reviewTask" targetRef="endSpike"/>
+    <endEvent id="endSpike" name="End"/>
+  </process>
+</definitions>

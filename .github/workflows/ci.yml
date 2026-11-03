@@ -1,0 +1,108 @@
+name: ci
+
+on:
+  push:
+    branches: [main, "r0-*"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Java reactor verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Maven cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+
+      - name: Verify (build, unit, integration, contract tests)
+        run: ./mvnw verify
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: cyclonedx-sbom
+          path: target/*.json
+          if-no-files-found: warn
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: "**/target/surefire-reports/**"
+          if-no-files-found: warn
+
+  frontend:
+    name: Workspace typecheck, lint, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Enable corepack/pnpm
+        run: corepack enable && pnpm --version
+
+      - name: Install workspace (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck, lint, test, build all packages
+        run: pnpm -r --if-present run typecheck && pnpm -r --if-present run lint && pnpm -r --if-present run test && pnpm -r --if-present run build
+
+  quality:
+    name: Quality gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Verify lockfile currency and generated sources
+        run: ./scripts/quality/verify-provenance.sh --quick
+
+      - name: Traceability gate
+        run: ./scripts/quality/verify-traceability.sh
+
+      - name: Generated API types drift gate
+        run: ./scripts/quality/verify-api-types.sh
+
+      - name: Rules gate (once rule assets exist)
+        run: ./scripts/quality/verify-rules.sh
+
+  security:
+    name: Dependency and secret scanning
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dependency review (lockfile drift on PRs)
+        if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@v4
+
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,4 @@
+covenant_id,entity_id,business_date,numerator_amount,denominator_amount,currency,source_revision
+COV001,ENT101,2026-11-01,850000.00,1700000.00,USD,REV-2026-11-01-01
+COV001,ENT103,2026-11-01,300000.00,0.00,USD,REV-2026-11-01-01
+COV002,ENT102,2026-11-01,600000.00,500000.00,EUR,REV-2026-11-01-01

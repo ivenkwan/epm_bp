@@ -1,0 +1,4 @@
+facility_id,entity_id,bank_name,currency,committed_limit,utilization_amount,effective_from,effective_to
+FAC001,ENT101,First Synthetic Bank,USD,1000000.00,625000.50,2026-01-01,
+FAC002,ENT102,Second Synthetic Bank,EUR,500000.00,500000.00,2026-01-01,
+FAC003,ENT103,Third Synthetic Bank,USD,250000.00,250001.00,2026-01-01,

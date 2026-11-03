@@ -1,0 +1,2 @@
+reconciliation_id,source_total,loaded_total,difference,tolerance,status
+TREC1,1000.00,1000.01,0.01,0.01,MATCHED_AT_EXACT_TOLERANCE

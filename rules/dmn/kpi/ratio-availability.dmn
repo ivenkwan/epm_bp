@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
+             xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/"
+             xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/"
+             id="kpi-registry" name="kpi-registry" namespace="https://epm.dev/rules/kpi">
+  <inputData id="numeratorPresentInput" name="numeratorPresent">
+    <variable id="numeratorPresentVar" name="numeratorPresent" typeRef="string"/>
+  </inputData>
+  <inputData id="denominatorPresentInput" name="denominatorPresent">
+    <variable id="denominatorPresentVar" name="denominatorPresent" typeRef="string"/>
+  </inputData>
+  <inputData id="denominatorZeroInput" name="denominatorZero">
+    <variable id="denominatorZeroVar" name="denominatorZero" typeRef="string"/>
+  </inputData>
+  <decision id="ratioAvailability" name="Ratio Availability">
+    <variable id="ratioAvailabilityVar" name="Ratio Availability" typeRef="string"/>
+    <informationRequirement id="reqNumerator">
+      <requiredInput href="#numeratorPresentInput"/>
+    </informationRequirement>
+    <informationRequirement id="reqDenominator">
+      <requiredInput href="#denominatorPresentInput"/>
+    </informationRequirement>
+    <informationRequirement id="reqZero">
+      <requiredInput href="#denominatorZeroInput"/>
+    </informationRequirement>
+    <decisionTable id="ratioAvailabilityTable" hitPolicy="FIRST">
+      <input id="numeratorPresent" label="Numerator present">
+        <inputExpression id="numeratorPresentExpr" typeRef="string">
+          <text>numeratorPresent</text>
+        </inputExpression>
+      </input>
+      <input id="denominatorPresent" label="Denominator present">
+        <inputExpression id="denominatorPresentExpr" typeRef="string">
+          <text>denominatorPresent</text>
+        </inputExpression>
+      </input>
+      <input id="denominatorZero" label="Denominator zero">
+        <inputExpression id="denominatorZeroExpr" typeRef="string">
+          <text>denominatorZero</text>
+        </inputExpression>
+      </input>
+      <output id="status" label="Status" name="status" typeRef="string"/>
+      <rule id="rUndefined">
+        <description>Absent mapped measures are undefined, never guessed.</description>
+        <inputEntry id="rUndefinedIn1"><text>"ABSENT"</text></inputEntry>
+        <inputEntry id="rUndefinedIn2"><text>-</text></inputEntry>
+        <inputEntry id="rUndefinedIn3"><text>-</text></inputEntry>
+        <outputEntry id="rUndefinedOut"><text>"UNDEFINED_MEASURE"</text></outputEntry>
+      </rule>
+      <rule id="rNullNumerator">
+        <description>Null never coerces to zero.</description>
+        <inputEntry id="rNullNumIn1"><text>"NULL"</text></inputEntry>
+        <inputEntry id="rNullNumIn2"><text>"PRESENT"</text></inputEntry>
+        <inputEntry id="rNullNumIn3"><text>-</text></inputEntry>
+        <outputEntry id="rNullNumOut"><text>"UNAVAILABLE_NULL_NUMERATOR"</text></outputEntry>
+      </rule>
+      <rule id="rZeroDenominator">
+        <description>Zero denominators are governed-unavailable, never a breach value.</description>
+        <inputEntry id="rZeroDenIn1"><text>"PRESENT"</text></inputEntry>
+        <inputEntry id="rZeroDenIn2"><text>"PRESENT"</text></inputEntry>
+        <inputEntry id="rZeroDenIn3"><text>"TRUE"</text></inputEntry>
+        <outputEntry id="rZeroDenOut"><text>"UNAVAILABLE_ZERO_DENOMINATOR"</text></outputEntry>
+      </rule>
+      <rule id="rOk">
+        <inputEntry id="rOkIn1"><text>"PRESENT"</text></inputEntry>
+        <inputEntry id="rOkIn2"><text>"PRESENT"</text></inputEntry>
+        <inputEntry id="rOkIn3"><text>"FALSE"</text></inputEntry>
+        <outputEntry id="rOkOut"><text>"OK"</text></outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="kpiRegistryDiagram">
+      <dmndi:DMNShape id="shapeRatio" dmnElementRef="ratioAvailability">
+        <dc:Bounds x="100" y="100" width="180" height="80"/>
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

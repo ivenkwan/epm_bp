@@ -1,0 +1,3 @@
+covenant_id,covenant_name,formula,numerator_input,denominator_input,threshold,comparison,inclusive,version
+COV001,Gearing Cap,net_debt_divided_by_equity,NET_DEBT,EQUITY,0.600000,LESS_THAN_OR_EQUAL,true,cov-1.0.0
+COV002,Minimum Liquidity Ratio,liquid_assets_divided_by_current_liabilities,LIQUID_ASSETS,CURRENT_LIABILITIES,1.200000,GREATER_THAN_OR_EQUAL,true,cov-1.0.0

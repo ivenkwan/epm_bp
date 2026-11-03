@@ -1,0 +1,2 @@
+scope,business_date,currency,opening_total,inflow_total,outflow_total,closing_total,fx_version,rounding_mode,scale
+GROUP,2026-11-01,USD,1724.50,376.25,159.75,1941.00,FX-V1,HALF_UP,2

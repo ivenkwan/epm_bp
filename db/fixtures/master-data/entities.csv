@@ -1,0 +1,10 @@
+entity_id,entity_name,parent_entity_id,hierarchy_version,effective_from,effective_to,currency_code,region,restricted
+ENT001,Group Holdings,,HIER-V1,2026-01-01,,USD,GROUP,false
+ENT101,Northern Manufacturing,ENT001,HIER-V1,2026-01-01,,USD,REGION-NORTH,false
+ENT102,Southern Services,ENT001,HIER-V1,2026-01-01,,EUR,REGION-SOUTH,false
+ENT103,Eastern Trading,ENT001,HIER-V1,2026-01-01,,USD,REGION-EAST,false
+ENT104,Restricted Subsidiary,ENT001,HIER-V1,2026-01-01,,USD,REGION-EAST,true
+ENT101,Northern Manufacturing,ENT001,HIER-V2,2026-07-01,,USD,REGION-NORTH,false
+ENT102,Southern Services,ENT001,HIER-V2,2026-07-01,,EUR,REGION-SOUTH,false
+ENT103,Eastern Trading,ENT101,HIER-V2,2026-07-01,,USD,REGION-EAST,false
+ENT104,Restricted Subsidiary,ENT101,HIER-V2,2026-07-01,,USD,REGION-EAST,true

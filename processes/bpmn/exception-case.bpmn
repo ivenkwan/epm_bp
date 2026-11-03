@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             id="exception-case-definitions"
+             targetNamespace="https://epm.dev/processes/exception-case"
+             typeLanguage="http://www.java.com/javaTypes"
+             expressionLanguage="http://www.mvel.org/2.0">
+  <process id="exception_case" name="Exception Case Management" isExecutable="true" processType="Private">
+    <!-- Coordinated by Kogito; all durable business state lives in PostgreSQL
+         (epm_case). Timers only remind/reassign/escalate/change visibility. -->
+    <startEvent id="caseOpened" name="Case opened"/>
+    <sequenceFlow id="f1" sourceRef="caseOpened" targetRef="triageTask"/>
+    <userTask id="triageTask" name="Triage case">
+      <documentation>Confirm severity and ownership. Approver must not be the reporter.</documentation>
+    </userTask>
+    <sequenceFlow id="f2" sourceRef="triageTask" targetRef="resolveTask"/>
+    <userTask id="resolveTask" name="Resolve with evidence">
+      <documentation>Attach evidence and propose resolution. Evidence is mandatory.</documentation>
+    </userTask>
+    <sequenceFlow id="f3" sourceRef="resolveTask" targetRef="approvalTask"/>
+    <userTask id="approvalTask" name="Independent approval">
+      <documentation>Approver must differ from the resolver.</documentation>
+    </userTask>
+    <sequenceFlow id="f4" sourceRef="approvalTask" targetRef="verifyTask"/>
+    <userTask id="verifyTask" name="Independent verification">
+      <documentation>Verifier must differ from the approver; verifies downstream effects.</documentation>
+    </userTask>
+    <sequenceFlow id="f5" sourceRef="verifyTask" targetRef="closeTask"/>
+    <userTask id="closeTask" name="Independent closure">
+      <documentation>Closure is a case decision only; business-object certification is separate.</documentation>
+    </userTask>
+    <sequenceFlow id="f6" sourceRef="closeTask" targetRef="caseClosed"/>
+    <endEvent id="caseClosed" name="Case closed"/>
+  </process>
+</definitions>

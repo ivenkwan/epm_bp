@@ -1,0 +1,39 @@
+package rules.validation;
+
+// Task 13/19 validation rule set (val-1.0.0).
+// Deterministic, terminating, side-effect free: violations only mark the fact.
+dialect "java"
+
+import dev.epm.tests.rules.LandedRow;
+
+rule "completeness: null amount is quarantined"
+when
+    $row : LandedRow( amountIsNull == true, quarantined == false )
+then
+    $row.setQuarantined( true );
+    $row.setViolationCode( "NULL_AMOUNT" );
+end
+
+rule "completeness: missing account is quarantined"
+when
+    $row : LandedRow( accountId == null || accountId == "", quarantined == false )
+then
+    $row.setQuarantined( true );
+    $row.setViolationCode( "MISSING_ACCOUNT" );
+end
+
+rule "type: currency must be three uppercase letters"
+when
+    $row : LandedRow( currency != null && !currency.matches("[A-Z]{3}"), quarantined == false )
+then
+    $row.setQuarantined( true );
+    $row.setViolationCode( "CURRENCY_INVALID" );
+end
+
+rule "sign: negative amount is quarantined on non-overdraft categories"
+when
+    $row : LandedRow( amount != null && amount.signum() < 0, category == "RECEIPT", quarantined == false )
+then
+    $row.setQuarantined( true );
+    $row.setViolationCode( "INVALID_SIGN" );
+end

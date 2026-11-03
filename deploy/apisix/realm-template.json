@@ -1,0 +1,65 @@
+{
+  "realm": "epm",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginTheme": "keycloak",
+  "clients": [
+    {
+      "clientId": "apisix-gateway",
+      "name": "APISIX edge gateway (confidential client with introspection service account)",
+      "publicClient": false,
+      "secret": "__GATEWAY_CLIENT_SECRET__",
+      "bearerOnly": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true
+    },
+    {
+      "clientId": "finance-web",
+      "name": "Strict TypeScript web application",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": ["http://localhost:5173/*"],
+      "webOrigins": ["http://localhost:5173"]
+    }
+  ],
+  "roles": {
+    "realm": [
+      { "name": "finance-preparer" },
+      { "name": "finance-approver" },
+      { "name": "finance-certifier" },
+      { "name": "finance-verifier" },
+      { "name": "finance-admin" },
+      { "name": "assurance-reader" }
+    ]
+  },
+  "users": [
+    {
+      "username": "smoke.tester",
+      "enabled": true,
+      "firstName": "Smoke",
+      "lastName": "Tester",
+      "email": "smoke.tester@epm.invalid",
+      "emailVerified": true,
+      "requiredActions": [],
+      "notBefore": 0,
+      "access": {
+        "manageGroupMembership": true,
+        "view": true,
+        "mapRoles": true,
+        "impersonate": true,
+        "manage": true
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "temporary": false,
+          "value": "__SMOKE_PASSWORD__"
+        }
+      ],
+      "realmRoles": ["finance-preparer"]
+    }
+  ]
+}

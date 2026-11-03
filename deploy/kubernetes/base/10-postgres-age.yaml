@@ -1,0 +1,96 @@
+# PostgreSQL 17 + Apache AGE — the single financial system of record for the local platform.
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-age
+  namespace: epm-system
+  labels:
+    app: postgres-age
+spec:
+  clusterIP: None
+  selector:
+    app: postgres-age
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-age
+  namespace: epm-system
+  labels:
+    app: postgres-age
+spec:
+  serviceName: postgres-age
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-age
+  template:
+    metadata:
+      labels:
+        app: postgres-age
+        app.kubernetes.io/name: postgres-age
+        app.kubernetes.io/part-of: epm-finance
+        epm.io/cost-center: platform
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+      containers:
+        - name: postgres
+          image: apache/age:release_PG17_1.7.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+              name: postgres
+          env:
+            - name: POSTGRES_DB
+              value: epm
+            - name: POSTGRES_USER
+              value: epm
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_PASSWORD
+            # Keep PGDATA in a subdirectory so the entrypoint can (re)initialize cleanly
+            # under a volume-mounted parent owned via fsGroup.
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          args:
+            - postgres
+            - -c
+            - ssl=off
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "pg_isready -U epm -d epm"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command: ["sh", "-c", "pg_isready -U epm -d epm"]
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 2Gi

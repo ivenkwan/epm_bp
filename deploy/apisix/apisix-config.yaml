@@ -1,0 +1,30 @@
+# APISIX standalone configuration for the local platform.
+# Deployment: routes carry OIDC via the keycloak test provider, correlation-id propagation,
+# request body/rate limits, and TLS is terminated at the edge in environments that need it
+# (local dev uses plain HTTP on the mapped node port; production overlays must set ssl).
+deployment:
+  role: traditional
+  role_traditional:
+    config_provider: yaml
+
+apisix:
+  node_listen:
+    - port: 9080
+  enable_admin: false
+  config_center: yaml
+  allow_admin:
+    - 127.0.0.0/32
+
+plugin_attr:
+  prometheus:
+    export_addr:
+      ip: "0.0.0.0"
+      port: 9091
+
+plugins:
+  - openid-connect
+  - request-id
+  - limit-req
+  - limit-body-size
+  - prometheus
+  - proxy-rewrite

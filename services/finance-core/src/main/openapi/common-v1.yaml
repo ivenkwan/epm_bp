@@ -1,0 +1,271 @@
+# Common API contract components for /api/v1 (all services).
+# Canonical shapes: decimal strings, explicit currency/scale/rounding, UTC timebases,
+# revision + ETag, correlation, durable jobs, problem details, and the outbox event
+# envelope. Examples are the exact shapes from PRD §8.
+openapi: 3.1.0
+info:
+  title: EPM Finance common API components
+  version: "1.0"
+  description: >-
+    Shared schemas for every EPM finance service. Money and rates cross API boundaries
+    as strings with explicit currency, scale, and rounding metadata; recorded time is
+    always UTC; mutations carry Idempotency-Key and conditional edits carry If-Match.
+
+paths: {}
+
+components:
+  schemas:
+    DecimalString:
+      type: string
+      pattern: '^-?\d+\.\d{1,12}$'
+      description: Fixed-precision decimal transported as a string; never a JSON number.
+      examples: ["1250000.00", "1.1000", "0.500000"]
+
+    CurrencyCode:
+      type: string
+      pattern: '^[A-Z]{3}$'
+      description: ISO 4217 currency code.
+      examples: ["USD", "EUR"]
+
+    DecimalMetadata:
+      type: object
+      required: [scale, roundingMode]
+      properties:
+        scale:
+          type: integer
+          minimum: 0
+          maximum: 12
+        roundingMode:
+          type: string
+          enum: [HALF_UP, HALF_EVEN, DOWN]
+
+    UtcTimestamp:
+      type: string
+      format: date-time
+      description: RFC-3339 timestamp with Z offset (recorded/receiving time is always UTC).
+      examples: ["2026-10-31T01:15:22Z"]
+
+    EffectiveDate:
+      type: string
+      format: date
+      description: Business timebase (effective date), distinct from recordedAt.
+      examples: ["2026-10-31"]
+
+    RevisionRef:
+      type: object
+      required: [objectType, stableId, revision]
+      properties:
+        objectType:
+          type: string
+        stableId:
+          type: string
+        revision:
+          type: integer
+          minimum: 1
+
+    ETag:
+      type: string
+      description: Strong entity tag derived from the governed revision and payload hash.
+      examples: ['"adjustment-revision-4"']
+
+    CorrelationId:
+      type: string
+      description: End-to-end correlation identifier propagated across services and telemetry.
+      examples: ["corr-20261031-000123"]
+
+    JobResource:
+      type: object
+      required: [jobId, jobType, status, submittedAt, links]
+      properties:
+        jobId:
+          type: string
+        jobType:
+          type: string
+        status:
+          type: string
+          enum: [QUEUED, RUNNING, SUCCEEDED, FAILED]
+        submittedAt:
+          $ref: '#/components/schemas/UtcTimestamp'
+        progressPercent:
+          type: integer
+          minimum: 0
+          maximum: 100
+        result:
+          type: object
+          additionalProperties: true
+        links:
+          type: object
+          properties:
+            self:
+              type: string
+              examples: ["/api/v1/jobs/01JCEXAMPLE8M5E0E8R7J7Q3Z6A2"]
+
+    EventEnvelope:
+      type: object
+      required: [eventId, aggregateType, aggregateId, eventType, occurredAt]
+      properties:
+        eventId:
+          type: string
+          format: uuid
+          description: Stable id used by consumers to deduplicate redeliveries.
+        aggregateType:
+          type: string
+        aggregateId:
+          type: string
+        eventType:
+          type: string
+        correlationId:
+          $ref: '#/components/schemas/CorrelationId'
+        occurredAt:
+          $ref: '#/components/schemas/UtcTimestamp'
+
+    Violation:
+      type: object
+      required: [field, code, message]
+      properties:
+        field:
+          type: string
+        code:
+          type: string
+        message:
+          type: string
+          description: Human-safe message; never a stack trace or internal detail.
+
+    Problem:
+      type: object
+      required: [type, title, status, correlationId]
+      properties:
+        type:
+          type: string
+          examples: ["about:blank"]
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        code:
+          type: string
+          description: Stable machine-readable problem code.
+          examples: ["VALIDATION_FAILED"]
+        correlationId:
+          $ref: '#/components/schemas/CorrelationId'
+        violations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Violation'
+
+    SubmissionAck:
+      type: object
+      required: [submissionId, revision, status, recordedAt, links]
+      properties:
+        submissionId:
+          type: string
+        revision:
+          type: integer
+        status:
+          type: string
+          enum: [RECEIVED]
+        recordedAt:
+          $ref: '#/components/schemas/UtcTimestamp'
+        links:
+          type: object
+          properties:
+            validationJob:
+              type: string
+
+  responses:
+    AcceptedJob:
+      description: Long-running work accepted as a durable job (PRD 8.3 example, verbatim shape).
+      headers:
+        Idempotency-Key:
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/JobResource'
+          example:
+            jobId: "01JCEXAMPLE8M5E0E8R7J7Q3Z6A2"
+            jobType: "VALIDATE_SUBMISSION"
+            status: "RUNNING"
+            submittedAt: "2026-10-31T01:15:23Z"
+            links:
+              self: "/api/v1/jobs/01JCEXAMPLE8M5E0E8R7J7Q3Z6A2"
+
+    UnprocessableEntity:
+      description: Validation failure with field violations (PRD 8.3 example, verbatim shape).
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: "about:blank"
+            title: "Submission validation failed"
+            status: 422
+            detail: "Two fields require correction."
+            instance: "/api/v1/jobs/01JCEXAMPLE8M5E0E8R7J7Q3Z6A2"
+            code: "VALIDATION_FAILED"
+            correlationId: "corr-20261031-000123"
+            violations:
+              - field: "openingCash"
+                code: "PRECISION_EXCEEDED"
+                message: "Use no more than two decimal places."
+              - field: "effectiveDate"
+                code: "PERIOD_CLOSED"
+                message: "The requested period is closed."
+
+    ConflictIdempotencyKeyReuse:
+      description: Idempotency key reused with a different canonical payload fingerprint.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: "about:blank"
+            title: "Idempotency key reuse with different payload"
+            status: 409
+            code: "IDEMPOTENCY_KEY_REUSED"
+            correlationId: "corr-20261031-000123"
+
+    ConflictStaleRevision:
+      description: If-Match revision is older than the current revision (lost update guard).
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: "about:blank"
+            title: "Stale revision"
+            status: 409
+            detail: "The provided If-Match revision is no longer current."
+            code: "STALE_REVISION"
+            correlationId: "corr-20261031-000123"
+
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Bound to actor, operation, and canonical payload fingerprint.
+      examples: ["8fa4c68e-93d4-4ea0-9543-a2ea51090001"]
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Current revision ETag; stale values return 409 without a second effect.
+      examples: ['"adjustment-revision-4"']
+    CorrelationHeader:
+      name: X-Correlation-Id
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Propagated correlation id; generated when absent and echoed on responses.

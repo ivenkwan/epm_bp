@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
+             xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/"
+             xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/"
+             xmlns:di="http://www.omg.org/spec/DMN/20180521/DI/"
+             id="toolchain-spike" name="toolchain-spike" namespace="https://epm.dev/toolchain/spike">
+  <inputData id="severityInputData" name="severity">
+    <variable id="severityVariable" name="severity" typeRef="string"/>
+  </inputData>
+  <decision id="approvalLevel" name="Approval Level">
+    <variable id="approvalLevelVariable" name="Approval Level" typeRef="string"/>
+    <informationRequirement id="severityRequirement">
+      <requiredInput href="#severityInputData"/>
+    </informationRequirement>
+    <decisionTable id="approvalLevelTable" hitPolicy="FIRST">
+      <input id="severityTableInput" label="Severity">
+        <inputExpression id="severityExpression" typeRef="string" expressionLanguage="https://www.omg.org/spec/DMN/20191111/FEEL/">
+          <text>severity</text>
+        </inputExpression>
+      </input>
+      <output id="levelOutput" label="Level" name="level" typeRef="string"/>
+      <rule id="ruleTwoEyes">
+        <description>Material adjustments require independent four-eyes approval.</description>
+        <inputEntry id="ruleTwoEyesInput">
+          <text>"HIGH"</text>
+        </inputEntry>
+        <outputEntry id="ruleTwoEyesOutput">
+          <text>"TWO_EYES"</text>
+        </outputEntry>
+      </rule>
+      <rule id="ruleSingle">
+        <description>Low materiality follows a single named approver.</description>
+        <inputEntry id="ruleSingleInput">
+          <text>"LOW"</text>
+        </inputEntry>
+        <outputEntry id="ruleSingleOutput">
+          <text>"SINGLE"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="toolchainSpikeDiagram">
+      <dmndi:DMNShape id="severityShape" dmnElementRef="severityInputData">
+        <dc:Bounds x="100" y="100" width="120" height="60"/>
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="decisionShape" dmnElementRef="approvalLevel">
+        <dc:Bounds x="320" y="100" width="160" height="80"/>
+      </dmndi:DMNShape>
+      <dmndi:DMNEdge id="severityEdge" dmnElementRef="severityRequirement">
+        <di:waypoint x="220" y="130"/>
+        <di:waypoint x="320" y="140"/>
+      </dmndi:DMNEdge>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>
