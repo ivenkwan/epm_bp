@@ -20,6 +20,7 @@ case "${RELEASE}" in
   R1) PACK="docs/operations/r1-evidence-pack.md" ;;
   R2) PACK="docs/operations/r2-evidence-pack.md" ;;
   R3) PACK="docs/operations/r3-evidence-pack.md" ;;
+  R4) PACK="docs/operations/r4-evidence-pack.md" ;;
   *) echo "unknown release ${RELEASE}" >&2; exit 2 ;;
 esac
 
@@ -63,6 +64,21 @@ if [ "${RELEASE}" = "R3" ]; then
   fi
   ./scripts/operations/run-planning-migration.sh --verify >/dev/null \
     || fail "planning migration gate failed"
+fi
+
+# 5c. R4 requires its own build status for Tasks 47-57 (incl. 56), the final
+#     recovery gate, and the AI security gate.
+if [ "${RELEASE}" = "R4" ]; then
+  R4_STATUS="docs/operations/r4-build-status.md"
+  [ -f "${R4_STATUS}" ] || fail "R4 build status missing"
+  for task in 47 48 49 50 51 52 53 54 55 56 57; do
+    grep -qE "^\| ${task} \|" "${R4_STATUS}" || fail "R4 build status row missing for task ${task}"
+  done
+  if grep -q '| PENDING | — |' "${R4_STATUS}"; then
+    fail "R4 build status still contains PENDING rows"
+  fi
+  ./scripts/quality/verify-security.sh --suite ai >/dev/null || fail "AI security gate failed"
+  ./scripts/operations/verify-final-recovery.sh >/dev/null || fail "final recovery gate failed"
 fi
 
 # 6. Sign-off block present and unsigned rows reported.

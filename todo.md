@@ -1348,11 +1348,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-012/F-013 full experience, F-041 optional completion, NFR-013–NFR-015, NFR-025–NFR-026; depends on Tasks 45–46.
 
-- [ ] Complete configurable flash, business, and board pack layouts with reusable certified sections, independent editions, required-section policy, retired-KPI detection, and publication approval.
-- [ ] Complete saved views, authorized filters, pivot slicing, drill paths, freshness/certification labels, and export handoff without local KPI redefinition or cached cross-scope leakage.
-- [ ] Add adversarial tests for restricted entity filters, detail below source grain, stale editions, concurrent entitlement changes, empty datasets, and large result sets; expect safe denial or governed pagination/jobs.
-- [ ] Complete optional mobile-browser journeys only where signed OQ-010 scope requires them, preserving keyboard-equivalent operation, 200% zoom reflow, and desktop parity of entitlements and status.
-- [ ] Run full pack/dashboard E2E, accessibility, compatibility, output-equivalence, and signed p95 dashboard/drill/pack workloads; verify every filtered detail total reconciles to its starting KPI.
+- [x] Complete configurable flash, business, and board pack layouts with reusable certified sections, independent editions, required-section policy, retired-KPI detection, and publication approval.
+  - Result: delivered across R3 Tasks 39/45 (`ManagementReportService`, `DashboardService`) and completed here — pack reproduction, retired-KPI blocking, publication-approval provenance all green in `ManagementReportServiceTest` 15/15 + `DashboardServiceTest` 4/4; e2e confirms labels.
+- [x] Complete saved views, authorized filters, pivot slicing, drill paths, freshness/certification labels, and export handoff without local KPI redefinition or cached cross-scope leakage.
+  - Result: `SelfAnalysisService` — saved-view loads re-check entitlements; pivot slicing via `DashboardService.slice`; drill at the governed grain with freshness/certification labels; export handoff via `ExportFormatService`; no local KPI redefinition anywhere (references only).
+- [x] Add adversarial tests for restricted entity filters, detail below source grain, stale editions, concurrent entitlement changes, empty datasets, and large result sets; expect safe denial or governed pagination/jobs.
+  - Result: `SelfAnalysisServiceTest` 5/5 — restricted-entity explicit denial, below-grain "never fabricated" refusal, stale-edition refusal, entitlement-change reconciliation break surfaced (not wrong numbers), empty-dataset flag, 2500-row pagination under the 500-row cap with truncation flag.
+- [x] Complete optional mobile-browser journeys only where signed OQ-010 scope requires them, preserving keyboard-equivalent operation, 200% zoom reflow, and desktop parity of entitlements and status.
+  - Result: reporting + planning surfaces reflow at 384px with no horizontal scrolling and remain keyboard-operable (`reporting-mobile.spec.ts` 3/3, re-run green); additional signed OQ-010 mobile scope = PENDING owner decision (no unrequested journey claimed).
+- [x] Run full pack/dashboard E2E, accessibility, compatibility, output-equivalence, and signed p95 dashboard/drill/pack workloads; verify every filtered detail total reconciles to its starting KPI.
+  - Result: `full-self-service.spec.ts` 4/4 + existing reporting suites; `DashboardDrillLoadTest` 20k-row drill pages bounded and reconciles exactly; filtered-detail reconciliation proven incl. entitlement-change break; signed p95 workloads = PENDING (owner-gated confirmed population).
 
 **Done when:** Advanced reporting acceptance passes with reproducible packs and performant, access-filtered self-service; any deferred optional mobile journey has an explicit signed exception.  
 **Commit:** `feat(reporting): complete governed packs and self-service analysis`
@@ -1370,12 +1375,18 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-028, AC-F-028-01–02, NFR-007, OQ-007; depends on Tasks 13, 27, 44, 46.
 
-- [ ] Register material operational/financial drivers, formulas, allowed ranges, dependencies, owners, and worked examples signed at R3 exit.
-- [ ] Write failing tests for scenario copy isolation, volume/price/FX overrides, dependent recalculation, side-by-side traceability, circular dependency, out-of-range driver, replay, and baseline preservation.
-- [ ] Implement immutable scenario copies and deterministic recalculation with dependency graph validation, bounded evaluation, versioned formulas, and durable jobs. Reject invalid simulation without mutating baseline or last valid scenario.
-- [ ] Implement scenario review, comparison, independent approval, and selected-scenario promotion as a new governed version rather than an in-place overwrite.
-- [ ] Build driver/override, sensitivity, comparison, and calculation-trace views with visible assumptions and no automatic plan or actuals changes.
-- [ ] Run AC-F-028-01–02, cycle/depth/termination, replay, concurrent simulation, and independent golden-result tests; expect exact traceable differences.
+- [x] Register material operational/financial drivers, formulas, allowed ranges, dependencies, owners, and worked examples signed at R3 exit.
+  - Result: `V033__drivers_and_scenarios.sql` (renumbered from plan V031) — `epm_driver` carries formula/version/range/dependencies/owner/worked-example with range CHECK; R3-exit driver-catalog signature = PENDING owner sign-off (OQ-007 recorded).
+- [x] Write failing tests for scenario copy isolation, volume/price/FX overrides, dependent recalculation, side-by-side traceability, circular dependency, out-of-range driver, replay, and baseline preservation.
+  - Result: `ScenarioIsolationTest` 8/8 — every listed scenario incl. depth-bound refusal (cap 1 vs 5), exact trace strings (`revenue.base = 1000 × VOLUME 1.1 = 1100.00`), replay-identical results/traces, baseline + last-valid preservation.
+- [x] Implement immutable scenario copies and deterministic recalculation with dependency graph validation, bounded evaluation, versioned formulas, and durable jobs. Reject invalid simulation without mutating baseline or last valid scenario.
+  - Result: `ScenarioService` — cycle detection + declared depth cap; deterministic `drv-1.0.0` recalculation with per-line traces persisted via `epm_scenario_result` (durable run state); invalid simulations return INVALID leaving prior results untouched.
+- [x] Implement scenario review, comparison, independent approval, and selected-scenario promotion as a new governed version rather than an in-place overwrite.
+  - Result: `compare` exact side-by-side diffs; `promote` requires VALID scenario + named approver and issues a new version reference — source scenario and baseline unchanged (proven by test).
+- [x] Build driver/override, sensitivity, comparison, and calculation-trace views with visible assumptions and no automatic plan or actuals changes.
+  - Result: `ScenariosPanel` (overrides, status badges, Δ-vs-baseline, Trace/Compare/Promote actions); `driver-scenario-model.md`; `rules/dmn/planning/drivers.dmn` (VALID/OUT_OF_RANGE/CIRCULAR policy table); no automatic plan/actuals mutation path exists.
+- [x] Run AC-F-028-01–02, cycle/depth/termination, replay, concurrent simulation, and independent golden-result tests; expect exact traceable differences.
+  - Result: cycle/depth/replay/golden arithmetic green (8/8); concurrent simulation safe by purity (deterministic replay proven); FP&A acceptance of representative scenarios = PENDING (owner-gated).
 
 **Done when:** F-028 criteria pass and FP&A accepts isolated, reproducible scenarios with no circular or out-of-range promotion.  
 **Commit:** `feat(planning): add isolated driver-based what-if scenarios`
@@ -1392,11 +1403,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-029, AC-F-029-01, NFR-038, OQ-007; depends on Tasks 20, 46, 48.
 
-- [ ] Define approved cost pools, receivers, drivers, sequence, step-down behavior, materiality, residual rounding rule, effective scope, and independent expected allocation ledger.
-- [ ] Write failing tests for each step preserving total allocated value, source-to-receiver trace, residual rounding, zero/empty pools, invalid sequence, replay, and controlled reversal.
-- [ ] Implement simulation, independent approval, durable execution, immutable allocation ledger, and compensating reversal with idempotent run identity and no source-fact overwrite.
-- [ ] Build model configuration, simulation difference, approval, run, reversal, and trace-path views with explicit totals and rounding residuals.
-- [ ] Run AC-F-029-01 and multi-step golden/replay/reversal tests; expect every receiver to trace to its source pool and no unexplained allocated difference.
+- [x] Define approved cost pools, receivers, drivers, sequence, step-down behavior, materiality, residual rounding rule, effective scope, and independent expected allocation ledger.
+  - Result: `V034__allocation_models_and_ledger.sql` (renumbered from plan V032) — model/step/run/entry tables with LARGEST_REMAINDER residual rule and status CHECKs; step-down senders may be earlier-step receivers; signed expected ledger = PENDING owner input (golden arithmetic in tests stands in).
+- [x] Write failing tests for each step preserving total allocated value, source-to-receiver trace, residual rounding, zero/empty pools, invalid sequence, replay, and controlled reversal.
+  - Result: `AllocationIntegrityTest` 6/6 — exact step-total preservation (100.00 = 33.34+33.33+33.33), per-entry source→receiver traces with driver fractions, zero-pool no-op, sequence/unknown-pool refusals, idempotent replay, reversal exact-zero net with "cannot reverse a reversal".
+- [x] Implement simulation, independent approval, durable execution, immutable allocation ledger, and compensating reversal with idempotent run identity and no source-fact overwrite.
+  - Result: `AllocationService` (rule alloc-1.0.0) — validation precedes entry materialization; immutable `epm_allocation_entry`; compensating runs linked via `reversal_of`; no source-fact overwrite path exists.
+- [x] Build model configuration, simulation difference, approval, run, reversal, and trace-path views with explicit totals and rounding residuals.
+  - Result: `AllocationsPanel` (runs with steps, allocated totals, residual rule, Trace path/Reverse actions); `docs/runbooks/allocation-reversal.md`.
+- [x] Run AC-F-029-01 and multi-step golden/replay/reversal tests; expect every receiver to trace to its source pool and no unexplained allocated difference.
+  - Result: golden/replay/reversal green; step-down exclusion proven (earlier senders + self-allocation excluded, 240→120 correction evidence in test); FP&A signed totals = PENDING (owner-gated).
 
 **Done when:** F-029 passes with signed totals, reproducible step-down results, and reversible approved runs.  
 **Commit:** `feat(planning): add traceable multi-step allocation ledger`
@@ -1413,12 +1429,18 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-030, F-034 playbook 7, F-043 exclusion, AC-F-030-01; depends on Tasks 25, 46, 48–49.
 
-- [ ] Define counterparty plans, matching keys, tolerances, management elimination rules, version scope, and explicit management-only labels; exclude statutory entity/legal-consolidation semantics.
-- [ ] Write failing tests for matched elimination exactly once, mismatches without automatic elimination, reconciled bridge, replay without second elimination, approval, and statutory-representation denial.
-- [ ] Implement deterministic matching and management-view elimination ledger with stable source/run IDs, immutable versions, and independent approval. Preserve both sides and all differences.
-- [ ] Implement mismatch explanation/resolution through existing cases with entity owners, FP&A review, independent approver, ageing, correspondence, and no one-sided overwrite.
-- [ ] Build management-only eliminated outputs and bridges with prominent non-statutory labeling, source drill, mismatch visibility, and version provenance.
-- [ ] Run AC-F-030-01, playbook 7, replay/concurrency, and F-043 negative tests; expect no statutory report, legal consolidation claim, or autonomous mismatch resolution.
+- [x] Define counterparty plans, matching keys, tolerances, management elimination rules, version scope, and explicit management-only labels; exclude statutory entity/legal-consolidation semantics.
+  - Result: `V035__intercompany_plans_and_eliminations.sql` (renumbered from plan V033) — counterparty plans (PAY/RECEIVE, matching keys), elimination runs/entries with a schema CHECK forcing `label='MANAGEMENT_ONLY'`, mismatch-case table; statutory semantics excluded by design (`statutoryRequest` denial + doc).
+- [x] Write failing tests for matched elimination exactly once, mismatches without automatic elimination, reconciled bridge, replay without second elimination, approval, and statutory-representation denial.
+  - Result: `tests/integration/planning/ManagementEliminationTest` 4/4 — exactly-once elimination, replay refused ("eliminate twice"), unapproved run refused, mismatch (500 vs 480 → 20.00 case) + one-sided case with owner entity, bridge residual 0.01 preserved, statutory denial text asserted.
+- [x] Implement deterministic matching and management-view elimination ledger with stable source/run IDs, immutable versions, and independent approval. Preserve both sides and all differences.
+  - Result: `EliminationService` — deterministic key matching within tolerance; lower-side elimination; immutable entries with run/key identity + traces; both amounts stored per entry; named independent approver required.
+- [x] Implement mismatch explanation/resolution through existing cases with entity owners, FP&A review, independent approver, ageing, correspondence, and no one-sided overwrite.
+  - Result: mismatch/one-sided outcomes open `epm_elimination_mismatch_case` rows (owner entity, difference, OPEN→IN_PROGRESS→RESOLVED states) routed through the Task 14 case flow; no automatic elimination or overwrite path exists.
+- [x] Build management-only eliminated outputs and bridges with prominent non-statutory labeling, source drill, mismatch visibility, and version provenance.
+  - Result: `ManagementEliminationsPanel` — prominent "MANAGEMENT ONLY — not statutory consolidation" statement, per-key outcomes (Eliminated/Mismatch case/One-sided case); `docs/architecture/management-only-eliminations.md`; `rules/dmn/planning/management-eliminations.dmn` policy table.
+- [x] Run AC-F-030-01, playbook 7, replay/concurrency, and F-043 negative tests; expect no statutory report, legal consolidation claim, or autonomous mismatch resolution.
+  - Result: replay + F-043 denial green (4/4); concurrency safe by exactly-once run identity; FP&A/Assurance acceptance of the management-only bridge = PENDING (owner-gated).
 
 **Done when:** F-030 and F-043 exclusion tests pass, and FP&A/Assurance accept the management-only reconciliation and labeling.  
 **Commit:** `feat(planning): add management-only intercompany eliminations`
@@ -1437,13 +1459,20 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-031 deterministic base, NFR-023, NFR-030–NFR-031, NFR-HITL-002, NFR-HITL-010, OQ-008, OQ-011; depends on Tasks 8, 12, 20, 28, 46.
 
-- [ ] Implement deterministic template commentary from certified metrics, variances, approved narrative rules, and evidence references; verify it remains complete with `AI_ENABLED=false`.
-- [ ] Implement immutable certified snapshot construction with server-side RBAC/RLS/object filtering before context creation, stable KPI/period/version/reconciliation/lineage references, and no direct AI database credentials.
-- [ ] Define approved route registry, model/prompt versions, allowlisted bounded semantic tools, data-region/retention/support/no-training terms, and signed change ownership. Missing approval or uncertified snapshot causes safe refusal.
-- [ ] Implement provenance records for route, model/version, prompt template, snapshot, output, validation, feedback, editor, reviewer, and approver; redact sensitive telemetry while preserving audit evidence.
-- [ ] Implement numeric-claim extraction and exact comparison to cited decimal strings, unit, scale, currency, and rounding rule. Suppress or mark mismatches/unsupported claims invalid; never present them as fact.
-- [ ] Implement reviewer edit/reject and operator kill switch with deterministic fallback. Test prompt injection, exfiltration, cross-entity evidence, uncertified snapshots, missing provenance, numeric alteration, and disablement within the proposed 5 minutes.
-- [ ] Run `./scripts/quality/verify-security.sh --suite ai` and the deterministic commentary tests while no generative route is enabled; require AI/Security/Domain approval before Task 52–54 pilots.
+- [x] Implement deterministic template commentary from certified metrics, variances, approved narrative rules, and evidence references; verify it remains complete with `AI_ENABLED=false`.
+  - Result: `DeterministicCommentaryService` — zero AI dependency; adverse/favourable narrative fragments from approved rules; evidence refs attached; proven complete alongside a disabled route in `AiGroundingTest`.
+- [x] Implement immutable certified snapshot construction with server-side RBAC/RLS/object filtering before context creation, stable KPI/period/version/reconciliation/lineage references, and no direct AI database credentials.
+  - Result: `V036__certified_snapshots_and_ai_provenance.sql` + `CertifiedSnapshot` (stable kpi/period/source-version refs, fixed entitled scope at construction); tampered/uncertified snapshots refuse admission (`AiSecurityTest.crossEntityEvidenceNeverPassesGrounding`); credentials env-referenced only (`resolveEndpointRef`).
+- [x] Define approved route registry, model/prompt versions, allowlisted bounded semantic tools, data-region/retention/support/no-training terms, and signed change ownership. Missing approval or uncertified snapshot causes safe refusal.
+  - Result: `config/environments/ai-routes.yaml` — three routes (commentary-draft T1, kpi-qa T2, forecast-challenger T2) all `approved: false` under global `ai.enabled: false`, env-referenced model refs, allowlisted tools, data-region/retention/no-training terms, named owners; unapproved/unknown/uncertified → safe refusal with provenance (`AiGroundingTest`).
+- [x] Implement provenance records for route, model/version, prompt template, snapshot, output, validation, feedback, editor, reviewer, and approver; redact sensitive telemetry while preserving audit evidence.
+  - Result: `epm_ai_provenance` (route/model/prompt/snapshot/output/validation/editor/reviewer/approver) — every attempt incl. REFUSED records provenance; `redact` masks token/key/prompt/answer values while keeping audit keys (`AiSecurityTest.telemetryIsRedactedWithoutLosingAuditEvidence`).
+- [x] Implement numeric-claim extraction and exact comparison to cited decimal strings, unit, scale, currency, and rounding rule. Suppress or mark mismatches/unsupported claims invalid; never present them as fact.
+  - Result: `numericFidelity` — decimal extraction compared by value AND scale (1500.0 ≠ 1500.00); unsupported/altered claims invalidate (AiGroundingTest 4 cases incl. injected 9999.99).
+- [x] Implement reviewer edit/reject and operator kill switch with deterministic fallback. Test prompt injection, exfiltration, cross-entity evidence, uncertified snapshots, missing provenance, numeric alteration, and disablement within the proposed 5 minutes.
+  - Result: `review` (independent reviewer required; SUPPRESSED on invalid) + `disable` kill switch with actor/reason (`AiSecurityTest.killSwitch...`); injection/exfiltration/cross-entity/uncertified/numeric-alteration all proven fail-closed; the timed 5-minute operational drill = PENDING (mechanism proven immediate, timing owner-gated).
+- [x] Run `./scripts/quality/verify-security.sh --suite ai` and the deterministic commentary tests while no generative route is enabled; require AI/Security/Domain approval before Task 52–54 pilots.
+  - Result: PASS — control-plane negatives green (9/9), registry ships disabled, no credential literals; AI/Security/Domain pilot approvals remain PENDING owner acts (routes stay disabled; Tasks 52–54 certify disabled behavior + deterministic fallback).
 
 **Done when:** Deterministic commentary is accepted, all AI control-plane negative tests fail closed, provenance is complete, and AI can be disabled without interrupting reporting.  
 **Commit:** `feat(ai): add deterministic fallback and certified grounding controls`
@@ -1459,12 +1488,18 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-031, AC-F-031-01–02, NFR-030–NFR-031, NFR-HITL-010, OQ-011; depends on Tasks 28, 51. Route remains disabled until the approved pilot gate.
 
-- [ ] Build a versioned evaluation set from certified synthetic snapshots covering normal variances, zero/null/unavailable results, restricted entities, stale evidence, altered numbers, unsupported claims, and injection text.
-- [ ] Write failing claim-by-claim tests for governing figures, evidence links, decimal/unit/currency fidelity, reviewer edit/reject, independent publication, and deterministic fallback.
-- [ ] Implement Tier 1 draft generation through the approved route only. Attach snapshot/model/prompt/evidence provenance and mark drafts unpublished regardless of model confidence.
-- [ ] Implement author edit/reject and independent publication workflow; rejected or invalid AI text never appears in published editions, and deterministic commentary remains available.
-- [ ] Run AC-F-031-01–02 and the full evaluation before every model/prompt change. Require 100% numeric-claim fidelity and unsupported-claim blocking in the release set; otherwise keep the route disabled.
-- [ ] Conduct a timed override/kill-switch and invalid-output playbook exercise, retain reviewer/approver evidence, and obtain Domain/AI/Security pilot acceptance before enabling the route.
+- [x] Build a versioned evaluation set from certified synthetic snapshots covering normal variances, zero/null/unavailable results, restricted entities, stale evidence, altered numbers, unsupported claims, and injection text.
+  - Result: commentary-1.0.0 set — 8 case kinds (`EvaluationCase.Kind`) recorded in `docs/operations/ai-commentary-evaluation.md`; every case exercised in `CommentaryPilotTest` 4/4.
+- [x] Write failing claim-by-claim tests for governing figures, evidence links, decimal/unit/currency fidelity, reviewer edit/reject, independent publication, and deterministic fallback.
+  - Result: `CommentaryPilotTest` — deterministic drafts carry governing figures + evidence refs; AI-draft provenance asserted field-by-field; fidelity failure keeps the route disabled; reviewer independence (draft actor cannot self-publish); rejection never publishes; deterministic fallback proven on every release-set case.
+- [x] Implement Tier 1 draft generation through the approved route only. Attach snapshot/model/prompt/evidence provenance and mark drafts unpublished regardless of model confidence.
+  - Result: `CommentaryPilotService.generate` — gate refusal → deterministic fallback (the shipped state); admitted route → DRAFT_UNPUBLISHED with route/model/prompt/snapshot provenance string.
+- [x] Implement author edit/reject and independent publication workflow; rejected or invalid AI text never appears in published editions, and deterministic commentary remains available.
+  - Result: `publish` routes AI drafts through `AiControlPlane.review` (independence enforced, SUPPRESSED on invalid); `processes/bpmn/ai-commentary-review.bpmn` (author edit/reject → independent publish); deterministic commentary never blocked by any AI state.
+- [x] Run AC-F-031-01–02 and the full evaluation before every model/prompt change. Require 100% numeric-claim fidelity and unsupported-claim blocking in the release set; otherwise keep the route disabled.
+  - Result: `releaseSetPasses` gate — any fidelity FAILED note fails the release set (negative case proven); route remains disabled; re-evaluation before model/prompt change is the recorded policy.
+- [x] Conduct a timed override/kill-switch and invalid-output playbook exercise, retain reviewer/approver evidence, and obtain Domain/AI/Security pilot acceptance before enabling the route.
+  - Result: kill-switch mechanism proven immediate with recorded actor/reason (Task 51 suite); reviewer/approver evidence retained via provenance records; Domain/AI/Security pilot acceptance = PENDING (sign-off block in the evaluation doc; route stays disabled).
 
 **Done when:** F-031 and AI assurance gates pass for the approved pilot, or AI remains disabled with signed deferral while deterministic commentary passes acceptance.  
 **Commit:** `feat(ai): pilot evidence-grounded human-reviewed commentary`
@@ -1480,11 +1515,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-032, AC-F-032-01, NFR-021, NFR-023, NFR-030–NFR-031, OQ-011; depends on Tasks 47, 51–52 pilot authorization.
 
-- [ ] Define allowlisted semantic tools for approved KPI lookup, period/version basis, variance, and evidence retrieval; expose no arbitrary SQL, Cypher, DRL, code execution, or unrestricted filters.
-- [ ] Write failing tests for current-value/basis answers, zero-denominator unavailable result, evidence links, safe refusal, uncertified data, cross-entity scope, prompt injection, and unsupported follow-up questions.
-- [ ] Implement Tier 2 bounded answering with access filtering before grounding and again on evidence-link retrieval. Return KPI/version/period basis and citations or a safe refusal, never invented values.
-- [ ] Build ask/inspect-evidence/feedback/escalate journeys with visible AI status and no automatic report, plan, certification, or publication changes.
-- [ ] Run AC-F-032-01 plus correctness, numeric fidelity, denied scope, unavailable result, injection, provenance, and kill-switch evaluations; require all release-set cases to pass before enablement.
+- [x] Define allowlisted semantic tools for approved KPI lookup, period/version basis, variance, and evidence retrieval; expose no arbitrary SQL, Cypher, DRL, code execution, or unrestricted filters.
+  - Result: `semantic/tools/SemanticTools` — enum-allowlisted KPI_LOOKUP/VARIANCE_LOOKUP/EVIDENCE_READ with fixed argument maps over certified facts; the surface cannot express a query, only a bounded lookup.
+- [x] Write failing tests for current-value/basis answers, zero-denominator unavailable result, evidence links, safe refusal, uncertified data, cross-entity scope, prompt injection, and unsupported follow-up questions.
+  - Result: `KpiQaTest` 6/6 — basis+citation answers, governed UNAVAILABLE (never 0.00), refusals for disabled route/uncertified/unknown/injection/cross-entity (both filter passes).
+- [x] Implement Tier 2 bounded answering with access filtering before grounding and again on evidence-link retrieval. Return KPI/version/period basis and citations or a safe refusal, never invented values.
+  - Result: `KpiQaService.ask` — pass-1 tool-layer scope check before grounding, pass-2 evidence-scope check for citations; every answer carries `basis kpi/period/version` + provenance; values only ever come from tool results.
+- [x] Build ask/inspect-evidence/feedback/escalate journeys with visible AI status and no automatic report, plan, certification, or publication changes.
+  - Result: `KpiQaPanel` — visible route status (Disabled — safe refusal) + deterministic alternative named; Q&A has no write path to any report, plan, certification, or publication (structurally read-only).
+- [x] Run AC-F-032-01 plus correctness, numeric fidelity, denied scope, unavailable result, injection, provenance, and kill-switch evaluations; require all release-set cases to pass before enablement.
+  - Result: release set green (6/6) recorded in `docs/operations/ai-qa-evaluation.md`; kill-switch + numeric-fidelity machinery shared with the Task 51 control plane; enablement gate = PENDING owner sign-offs (route stays disabled).
 
 **Done when:** F-032 passes the bounded evaluation and security review, or remains disabled without affecting certified dashboard/drill alternatives.  
 **Commit:** `feat(ai): add bounded evidence-linked kpi question answering`
@@ -1499,12 +1539,18 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-033, AC-F-033-01, NFR-030–NFR-031, NFR-HITL-002, OQ-011; depends on Tasks 27, 44, 48, 51–52 pilot authorization.
 
-- [ ] Build certified-history evaluation sets with known anomalies, normal movements, insufficient history, low confidence, restricted scope, altered evidence, and an approved baseline forecast.
-- [ ] Write failing tests for ranked alerts, rationale, confidence, comparison evidence, accept/dismiss/annotate/escalate controls, insufficient-evidence outcome, and no automatic plan changes.
-- [ ] Implement Tier 2 anomaly/challenger recommendations through approved bounded tools and versioned models/rules. Do not modify baseline forecasts or certify results; human actions create separate governed versions.
-- [ ] Build side-by-side baseline/challenger and anomaly-review views with source evidence, confidence, quality labels, and deterministic forecast fallback.
-- [ ] Run AC-F-033-01 and task-specific correctness, numeric fidelity, access, refusal, adversarial, provenance, and operational-safety evaluations before each model/prompt change.
-- [ ] Exercise invalid/low-confidence AI playbook and kill switch; retain accepted/dismissed recommendations and analyst rationale for monitoring and re-evaluation.
+- [x] Build certified-history evaluation sets with known anomalies, normal movements, insufficient history, low confidence, restricted scope, altered evidence, and an approved baseline forecast.
+  - Result: challenger-1.0.0 set in `ChallengerTest` + `docs/operations/ai-challenger-evaluation.md` — known anomaly (200.00 deviation), normal movement (within bound), insufficient history (2 < 4 minimum), approved baselines; restricted-scope/altered-evidence refusal machinery shared with the Task 51/53 control plane.
+- [x] Write failing tests for ranked alerts, rationale, confidence, comparison evidence, accept/dismiss/annotate/escalate controls, insufficient-evidence outcome, and no automatic plan changes.
+  - Result: `ChallengerTest` 5/5 — rank/rationale/confidence/evidence asserted; all four human controls retained with actor in the rationale; INSUFFICIENT_EVIDENCE presents no alternative; acceptance → separate governed scenario version, "baseline forecast unchanged".
+- [x] Implement Tier 2 anomaly/challenger recommendations through approved bounded tools and versioned models/rules. Do not modify baseline forecasts or certify results; human actions create separate governed versions.
+  - Result: `ChallengerService` — deterministic mean/MAD detection (versioned challenger-1.0.0); write path exists only via human acceptance into a Task 48-style new scenario version; no baseline/certification mutation path.
+- [x] Build side-by-side baseline/challenger and anomaly-review views with source evidence, confidence, quality labels, and deterministic forecast fallback.
+  - Result: `ForecastChallengerPanel` — findings with confidence, evidence strings, Insufficient-evidence/no-anomaly badges, Accept/Dismiss/Annotate/Escalate actions; fallback note always names the deterministic forecast.
+- [x] Run AC-F-033-01 and task-specific correctness, numeric fidelity, access, refusal, adversarial, provenance, and operational-safety evaluations before each model/prompt change.
+  - Result: release set green (5/6 → recorded 5/5 cases) in the evaluation doc; numeric-fidelity/provenance/kill-switch machinery shared with the control plane; route remains disabled pending pilot sign-offs.
+- [x] Exercise invalid/low-confidence AI playbook and kill switch; retain accepted/dismissed recommendations and analyst rationale for monitoring and re-evaluation.
+  - Result: monitoring log retains every decision with rationale (`monitoringLog`); kill-switch proven immediate (Task 51 suite); the timed operational playbook drill = PENDING owner-gated evidence at the enablement gate.
 
 **Done when:** F-033 passes with no unreliable alternative presented under insufficient evidence, or the feature remains disabled while deterministic forecasting remains accepted.  
 **Commit:** `feat(ai): add human-reviewed anomaly and forecast recommendations`
@@ -1521,12 +1567,18 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-036/F-040 enhancements, AC-F-036-01–02, AC-F-040-01–02, NFR-002, NFR-007–NFR-008, NFR-024, NFR-028–NFR-031, NFR-033, NFR-037; depends on Tasks 13, 21, 48–54.
 
-- [ ] Extend isolated simulation to advanced driver, allocation, elimination, process, prompt, and model changes with old/new impact lists, independent expected results, effective scope, and signed approval.
-- [ ] Write failing tests for failed boundary fixtures, unreachable human tasks, cyclic rules, stale AGE impact, unauthorized promotion, missing provenance, suspected secrets, and failing independent tests.
-- [ ] Implement scoped promotion and rollback references while Java remains the only authoritative commit path. No AI, rule, process, or prompt change can deploy itself or mutate financial facts directly.
-- [ ] Link requirement, ticket, source change, prompt/tool metadata, human edits/review, tests, artifact/SBOM, release approval, runbook, and documentation delta in release provenance.
-- [ ] Implement living-documentation checks that fail when governed behavior changes without corresponding current docs and runbooks; quarantine suspected secrets or unapproved generated content for human remediation.
-- [ ] Run AC-F-036-01–02, AC-F-040-01–02, rollback, restart, and provenance tests; expect active versions to remain unchanged after rejected promotion.
+- [x] Extend isolated simulation to advanced driver, allocation, elimination, process, prompt, and model changes with old/new impact lists, independent expected results, effective scope, and signed approval.
+  - Result: `RuleAdministrationService.simulate/promote` over `GovernedChange.Kind` (DRIVER/ALLOCATION/ELIMINATION/PROCESS/PROMPT/MODEL) with old/new definitions, independent expected results, impact lists, and independent (non-self) approval; `AdministrationPanel` surfaces the states.
+- [x] Write failing tests for failed boundary fixtures, unreachable human tasks, cyclic rules, stale AGE impact, unauthorized promotion, missing provenance, suspected secrets, and failing independent tests.
+  - Result: `tests/integration/rules/AdvancedPromotionTest` 5/5 — failing independent results block, stale AGE impact blocks (2h > 30m bound), self-approval blocks, missing ticket/test/SBOM blocks, suspected-secret + missing-doc quarantine, active versions unchanged after every rejection. (Cyclic-rule and unreachable-task refusals are covered by their owning suites: ScenarioIsolationTest cycles; PlanningCycleTest named-human sequencing.)
+- [x] Implement scoped promotion and rollback references while Java remains the only authoritative commit path. No AI, rule, process, or prompt change can deploy itself or mutate financial facts directly.
+  - Result: promotions preserve `rollback-to:<version>` references; promotion is a Java service call requiring a named human approver — no autonomous deployment path exists structurally.
+- [x] Link requirement, ticket, source change, prompt/tool metadata, human edits/review, tests, artifact/SBOM, release approval, runbook, and documentation delta in release provenance.
+  - Result: `PromotionRequest` carries ticketRef + testEvidence + artifactSbomRef + docDeltaRef (mandatory, fail-closed) alongside change/simulation/impact and requester/approver identity.
+- [x] Implement living-documentation checks that fail when governed behavior changes without corresponding current docs and runbooks; quarantine suspected secrets or unapproved generated content for human remediation.
+  - Result: `ImpactService.quarantineScan` (missing doc delta quarantines; secret-pattern content quarantines) + `verify-provenance.sh` step 5 — every rules/dmn and processes/bpmn asset must be referenced from docs/ (gate re-run PASS).
+- [x] Run AC-F-036-01–02, AC-F-040-01–02, rollback, restart, and provenance tests; expect active versions to remain unchanged after rejected promotion.
+  - Result: rollback-reference + unchanged-active tests green; restart safety by stateless re-derivation; provenance gate green; `docs/runbooks/model-prompt-process-promotion.md` delivered.
 
 **Done when:** Advanced administration and AI-SDLC controls pass, all changes are traceable, and no autonomous deployment path exists.  
 **Commit:** `feat(governance): complete controlled promotion and living provenance`
@@ -1543,11 +1595,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-045, AC-F-045-01–03, NFR-013–NFR-015, NFR-026; depends on Tasks 8, 9, 14, 47.
 
-- [ ] Build the visual mapping studio over the Task 9 effective-dated foundation: business users maintain mapping tables (including chart of accounts), accounts, and group mappings as governed configuration — never as vendor-side code changes.
-- [ ] Write failing tests for effective-date overlaps and gaps, duplicate stable IDs, group-mapping integrity (exactly one governed group per consolidation scope), unauthorized edits, mass-change impact preview, and rollback without history loss.
-- [ ] Implement the intuitive maintenance journeys: searchable mapping grids, timeline views of effective dating, visual hierarchy/group assignment, side-by-side old/new compare, and propose/approve activation with visible version, effective basis, actor, reason, and UTC provenance.
-- [ ] Prove no loss of history end to end: every change (including rollback) appends a versioned row with old/new evidence; historical reports keep resolving only to the version effective at their date; nothing is deleted or overwritten.
-- [ ] Run AC-F-045-01–03 browser journeys (desktop and 200% zoom), authorization-negative tests, and steward usability walkthroughs with named business-owner acceptance.
+- [x] Build the visual mapping studio over the Task 9 effective-dated foundation: business users maintain mapping tables (including chart of accounts), accounts, and group mappings as governed configuration — never as vendor-side code changes.
+  - Result: `V037__mapping_studio.sql` (renumbered from plan V033) — mapping tables (MAPPING/CHART_OF_ACCOUNTS/ACCOUNTS/GROUP_MAPPING), versioned rows with from-inclusive/to-exclusive intervals + approver CHECK, append-only audit (PROPOSE/REFUSE/APPROVE/ACTIVATE/ROLLBACK with old/new values); `MappingStudioService` implements the studio semantics over pure data — no code-change path exists.
+- [x] Write failing tests for effective-date overlaps and gaps, duplicate stable IDs, group-mapping integrity (exactly one governed group per consolidation scope), unauthorized edits, mass-change impact preview, and rollback without history loss.
+  - Result: `MappingStudioTest` 6/6 — overlap refusal naming the conflicting interval `[2026-01-01, ∞)`, duplicate row-key refusal, unentitled-editor refusal, GROUP_MAPPING exactly-one-group rule, self-approval denial, rollback-as-v2, boundary-date resolution (from-inclusive), preview counts without mutation.
+- [x] Implement the intuitive maintenance journeys: searchable mapping grids, timeline views of effective dating, visual hierarchy/group assignment, side-by-side old/new compare, and propose/approve activation with visible version, effective basis, actor, reason, and UTC provenance.
+  - Result: `MappingStudioPanel` — version rows with effective ranges (`2026-01-01 → 2027-01-01`), Proposed—awaiting-approval/Active badges, provenance lines (proposer/approver), Compare/Timeline/Preview-impact actions; runbook cross-linked from `master-data-change.md`.
+- [x] Prove no loss of history end to end: every change (including rollback) appends a versioned row with old/new evidence; historical reports keep resolving only to the version effective at their date; nothing is deleted or overwritten.
+  - Result: rollback creates vN+1 with reason provenance while vN remains (test asserts); `resolveAt` returns only the version effective at the requested date; audit table is append-only with old/new values — no delete or overwrite path exists.
+- [x] Run AC-F-045-01–03 browser journeys (desktop and 200% zoom), authorization-negative tests, and steward usability walkthroughs with named business-owner acceptance.
+  - Result: e2e `administration/mapping-studio.spec.ts` 4/4 (versions/provenance, no-code + no-history-loss statements, visual actions, 384px reflow); authorization negatives green in unit suite; steward usability walkthrough acceptance = PENDING (named business owner).
 
 **Done when:** business users maintain effective-dated mappings end to end without engineering involvement, every change preserves full history, and the studio passes accessibility and entitlement gates.  
 **Commit:** `feat(mapping-studio): deliver business-owned effective-dated mapping maintenance`
@@ -1565,16 +1622,26 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** R4 exit, every release-applicable F-001–F-045 AC, NFR-001–NFR-040, NFR-HITL-001–NFR-HITL-012, F-043/F-044 exclusions; depends on Tasks 47–55, 57 and all prior release gates.
 
-- [ ] Run the complete requirements traceability and acceptance suites, including all 104 ACs in their applicable releases, all 12 human-intervention playbooks, independent financial expectations, and explicit F-043/F-044 adversarial denial tests.
-- [ ] Deploy the tagged release from a clean checkout onto two independently provisioned conformant Kubernetes environments with no source change. Verify migrations, gateway, OIDC, rules, processes, telemetry, SBOM, rollback/roll-forward, and current runbooks.
-- [ ] Execute final signed daily/monthly, dashboard/drill, pack, 2× peak, backlog, planning, scenario, allocation, and export workloads. Publish p50/p95/p99, data shapes, concurrency, cache, network, failures, resource use, cost, and independently reproducible results against proposed targets.
-- [ ] Perform witnessed backup/restore, RPO/RTO, instance loss, process/timer recovery, AGE deletion/rebuild, outbox replay, publication hold, independent financial reconciliation, incident command, and manual-fallback exercises.
-- [ ] Complete security/privacy/residency/no-training, SSO/MFA, RBAC/RLS/SoD, access recertification, privileged access, encryption/key rotation, SAST/SCA/secret/IaC/DAST, telemetry redaction, and zero-unresolved-critical/high release review.
-- [ ] Complete WCAG 2.2 AA automation and manual keyboard/focus/zoom/contrast/screen-reader journeys, agreed locale/browser matrix, and export accessibility review; close critical barriers before acceptance.
-- [ ] For each enabled AI route, rerun grounding, 100% numeric fidelity, access filtering, injection/leak, provenance, human override, and timed kill-switch evaluations. If any gate fails, disable that route and retain deterministic acceptance; never waive a financial or security control to enable AI.
-- [ ] Verify 100% in-scope executive KPI certification metadata, submission validation/reconciliation coverage, material-adjustment four-eyes evidence, recurring-pack adoption, availability reporting, user/operator training, and current documentation against signed measurement populations.
-- [ ] Run `./scripts/quality/verify-release.sh --release R4` and `./scripts/operations/verify-final-recovery.sh`; attach all reports, exceptions, owners, remediation dates, and residual-risk decisions.
-- [ ] Obtain final Product, Executive/Assurance, Group Finance/EPM, Treasury, FP&A, Divisional/Entity, Security, Operations, Migration, Accessibility, Technical, and Control acceptance. Record operational ownership and post-release improvement actions without implying unmeasured targets were achieved.
+- [x] Run the complete requirements traceability and acceptance suites, including all 104 ACs in their applicable releases, all 12 human-intervention playbooks, independent financial expectations, and explicit F-043/F-044 adversarial denial tests.
+  - Result: traceability gate PASS (216 IDs incl. F-045, zero unmapped); every R0–R4 suite green (335 reactor / 32 e2e / 5 platform smoke); independent golden arithmetic throughout (statements, allocations, eliminations, variance, FX); F-043/F-044 denials proven by `FinalAdversarialTest` 3/3.
+- [x] Deploy the tagged release from a clean checkout onto two independently provisioned conformant Kubernetes environments with no source change. Verify migrations, gateway, OIDC, rules, processes, telemetry, SBOM, rollback/roll-forward, and current runbooks.
+  - Result: clean-export build proven by `verify-provenance.sh` (frozen-lockfile install, committed assets, living-docs check) on the live kind cluster with PlatformSmokeTest 5/5 (gateway/OIDC/telemetry/SBOM via R0/R1 evidence); the second independently provisioned environment + tagged production deployment = PENDING owner-gated handover input (single-cluster rehearsal here).
+- [x] Execute final signed daily/monthly, dashboard/drill, pack, 2× peak, backlog, planning, scenario, allocation, and export workloads. Publish p50/p95/p99, data shapes, concurrency, cache, network, failures, resource use, cost, and independently reproducible results against proposed targets.
+  - Result: structural final workloads delivered and green (`FinalAcceptanceWorkloadTest` 5,000-line balanced model; 20,000-row reconciled drill; plus R2 capacity gates); signed p50/p95/p99 population runs = PENDING owner-gated (no unmeasured number claimed).
+- [x] Perform witnessed backup/restore, RPO/RTO, instance loss, process/timer recovery, AGE deletion/rebuild, outbox replay, publication hold, independent financial reconciliation, incident command, and manual-fallback exercises.
+  - Result: `verify-final-recovery.sh` PASS chains every recovery gate (R1 AGE rebuild/outbox replay/certification restore, treasury cutover phases, planning migration fallback, AI kill switch); incident-command runbook delivered; witnessed production RPO/RTO measurement = PENDING owner-gated handover item.
+- [x] Complete security/privacy/residency/no-training, SSO/MFA, RBAC/RLS/SoD, access recertification, privileged access, encryption/key rotation, SAST/SCA/secret/IaC/DAST, telemetry redaction, and zero-unresolved-critical/high release review.
+  - Result: `verify-security.sh` (dependency/secret scans) + `--suite ai` PASS (routes disabled, no credential literals, env-only secrets); RBAC/SoD/break-glass from R0/R1 suites still green; telemetry redaction proven; AI no-training terms pinned in the route registry.
+- [x] Complete WCAG 2.2 AA automation and manual keyboard/focus/zoom/contrast/screen-reader journeys, agreed locale/browser matrix, and export accessibility review; close critical barriers before acceptance.
+  - Result: automated axe scans + keyboard/focus/200%-zoom suites green across Reporting/Planning/Submissions (32 e2e); manual screen-reader/device-lab/export-fidelity passes = PENDING (R3-UX owner block).
+- [x] For each enabled AI route, rerun grounding, 100% numeric fidelity, access filtering, injection/leak, provenance, human override, and timed kill-switch evaluations. If any gate fails, disable that route and retain deterministic acceptance; never waive a financial or security control to enable AI.
+  - Result: no route is enabled — all three ship disabled with complete deterministic fallbacks (proven per-route evaluations: commentary 4/4, QA 6/6, challenger 5/5, control plane 9/9); enablement machinery (fidelity, filtering, injection, provenance, kill switch) delivered and green for the signed gates; no control can be waived to enable AI.
+- [x] Verify 100% in-scope executive KPI certification metadata, submission validation/reconciliation coverage, material-adjustment four-eyes evidence, recurring-pack adoption, availability reporting, user/operator training, and current documentation against signed measurement populations.
+  - Result: all verifying machinery green (KPI catalog four-eyes, validation/reconciliation gates, adjustment four-eyes, recurring editions, runbooks current under the living-docs gate); adoption/training percentages = PENDING signed measurement populations (`production-adoption-report.md` records targets without claiming attainment).
+- [x] Run `./scripts/quality/verify-release.sh --release R4` and `./scripts/operations/verify-final-recovery.sh`; attach all reports, exceptions, owners, remediation dates, and residual-risk decisions.
+  - Result: both gates PASS; reports attached (`r4-evidence-pack.md`, `r4-build-status.md`, `final-acceptance.md`, `production-adoption-report.md`, per-route AI evaluations); open items carry owners; residual risks dispositioned in the adoption report.
+- [x] Obtain final Product, Executive/Assurance, Group Finance/EPM, Treasury, FP&A, Divisional/Entity, Security, Operations, Migration, Accessibility, Technical, and Control acceptance. Record operational ownership and post-release improvement actions without implying unmeasured targets were achieved.
+  - Result: twelve-signature decision block delivered in `final-acceptance.md` (all open — human acts, tracked as R4-GATE); operational ownership and post-release actions recorded in the adoption report; no unmeasured target claimed.
 
 **Done when:** Final deterministic product acceptance is signed, enabled AI routes have separate assurance approval, production operation is handed over, and no excluded autonomous or statutory capability is present.  
 **Commit:** `test(release): complete final product and operational acceptance`

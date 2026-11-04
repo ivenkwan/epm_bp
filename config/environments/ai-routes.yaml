@@ -1,0 +1,44 @@
+# AI route registry (Task 51). Non-secret configuration only: credentials never
+# appear here or in code — model endpoints and keys are referenced by name and read
+# from environment variables / the secret service at runtime.
+#
+# State policy: every route ships DISABLED. A route is enabled only after its Task
+# 52-54 pilot evaluation, AI/Security/Domain approval, and kill-switch drill pass;
+# missing approval causes safe refusal (AiControlPlane).
+
+ai:
+  enabled: false                     # global master switch (operator kill switch)
+  routes:
+    - id: commentary-draft            # Task 52 (Tier 1)
+      tier: 1
+      purpose: evidence-grounded commentary drafts
+      model_ref: "${EPM_AI_COMMENTARY_MODEL_REF:none}"   # env-referenced, never literal
+      prompt_version: commentary-1.0.0
+      approved: false
+      owner: pending-ai-council
+      tools: [kpi_snapshot_read]
+      data_region: eu
+      retention_days: 30
+      training_on_customer_data: false
+    - id: kpi-qa                      # Task 53 (Tier 2)
+      tier: 2
+      purpose: bounded evidence-linked KPI Q&A
+      model_ref: "${EPM_AI_QA_MODEL_REF:none}"
+      prompt_version: qa-1.0.0
+      approved: false
+      owner: pending-ai-council
+      tools: [kpi_lookup, variance_lookup, evidence_read]
+      data_region: eu
+      retention_days: 30
+      training_on_customer_data: false
+    - id: forecast-challenger         # Task 54 (Tier 2)
+      tier: 2
+      purpose: anomaly and forecast-challenger recommendations
+      model_ref: "${EPM_AI_CHALLENGER_MODEL_REF:none}"
+      prompt_version: challenger-1.0.0
+      approved: false
+      owner: pending-ai-council
+      tools: [kpi_lookup, history_read]
+      data_region: eu
+      retention_days: 30
+      training_on_customer_data: false

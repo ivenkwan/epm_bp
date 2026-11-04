@@ -36,6 +36,35 @@ import {
   VARIANCE_ROWS,
   VarianceAnalysisPanel,
 } from '../features/variance-analysis/VarianceAnalysisPanel';
+import {
+  SCENARIOS,
+  ScenariosPanel,
+} from '../features/scenarios/ScenariosPanel';
+import {
+  ALLOCATION_RUNS,
+  AllocationsPanel,
+} from '../features/allocations/AllocationsPanel';
+import {
+  ELIMINATIONS,
+  ManagementEliminationsPanel,
+} from '../features/management-eliminations/ManagementEliminationsPanel';
+import {
+  PILOT_STATUS,
+  AiCommentaryPanel,
+} from '../features/ai-commentary/AiCommentaryPanel';
+import { QA_ROUTE_STATE, KpiQaPanel } from '../features/kpi-qa/KpiQaPanel';
+import {
+  CHALLENGER_ROWS,
+  ForecastChallengerPanel,
+} from '../features/forecast-challenger/ForecastChallengerPanel';
+import {
+  PROMOTIONS,
+  AdministrationPanel,
+} from '../features/administration/AdministrationPanel';
+import {
+  MAPPING_VERSIONS,
+  MappingStudioPanel,
+} from '../features/mapping-studio/MappingStudioPanel';
 import { ErrorBanner } from '../components/ErrorBanner';
 
 /**
@@ -135,6 +164,14 @@ export function AppShell(): ReactNode {
             <PlanningModelPanel statementRows={STATEMENT_ROWS} balanceChecks={BALANCE_CHECKS} />
             <PlanningCalendarPanel tasks={CALENDAR_TASKS} />
             <VarianceAnalysisPanel rows={VARIANCE_ROWS} />
+            <ScenariosPanel scenarios={SCENARIOS} />
+            <AllocationsPanel runs={ALLOCATION_RUNS} />
+            <ManagementEliminationsPanel rows={ELIMINATIONS} />
+            <AiCommentaryPanel status={PILOT_STATUS} />
+            <KpiQaPanel state={QA_ROUTE_STATE} />
+            <ForecastChallengerPanel rows={CHALLENGER_ROWS} />
+            <AdministrationPanel rows={PROMOTIONS} />
+            <MappingStudioPanel versions={MAPPING_VERSIONS} />
           </section>
         ) : (
           <section aria-labelledby="reports-heading">
