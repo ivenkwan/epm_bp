@@ -29,3 +29,11 @@ mappings, and hierarchy versions (`MasterDataService`).
 
 Every change appends to `epm_audit_event` via `MasterDataAudit` (actor, reason,
 old/new values, UTC time) and is immutable under the Task 5 guards.
+
+## Business-user maintenance outlook (F-045)
+
+Effective-dated mapping tables (including chart of accounts), accounts, and group
+mappings gain a dedicated visual studio in R4 (Task 57, `mapping-studio.md`): the
+same propose/compare/approve/activate/roll-back semantics above, driven from
+searchable grids and timeline views, with no vendor-side code changes and no loss of
+history. This runbook remains the semantic contract the studio implements.

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
+             xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/"
+             xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/"
+             id="fx-translation" name="fx-translation"
+             namespace="https://epm.dev/rules/planning">
+  <inputData id="localValuePresentInput" name="localValuePresent">
+    <variable id="localValuePresentVar" name="localValuePresent" typeRef="boolean"/>
+  </inputData>
+  <inputData id="rateFoundInput" name="rateFound">
+    <variable id="rateFoundVar" name="rateFound" typeRef="boolean"/>
+  </inputData>
+  <inputData id="rateVersionApprovedInput" name="rateVersionApproved">
+    <variable id="rateVersionApprovedVar" name="rateVersionApproved" typeRef="boolean"/>
+  </inputData>
+  <decision id="fxTranslationStatus" name="FX Translation Status">
+    <variable id="fxTranslationStatusVar" name="FX Translation Status" typeRef="string"/>
+    <informationRequirement id="reqLocalPresent">
+      <requiredInput href="#localValuePresentInput"/>
+    </informationRequirement>
+    <informationRequirement id="reqRateFound">
+      <requiredInput href="#rateFoundInput"/>
+    </informationRequirement>
+    <informationRequirement id="reqRateApproved">
+      <requiredInput href="#rateVersionApprovedInput"/>
+    </informationRequirement>
+    <decisionTable id="fxStatusTable" hitPolicy="FIRST">
+      <input id="localPresentCol" label="Local value present">
+        <inputExpression id="localPresentExpr" typeRef="boolean">
+          <text>localValuePresent</text>
+        </inputExpression>
+      </input>
+      <input id="rateFoundCol" label="Approved-version rate found for the exact date">
+        <inputExpression id="rateFoundExpr" typeRef="boolean">
+          <text>rateFound</text>
+        </inputExpression>
+      </input>
+      <input id="rateApprovedCol" label="Rate's FX version approved">
+        <inputExpression id="rateApprovedExpr" typeRef="boolean">
+          <text>rateVersionApproved</text>
+        </inputExpression>
+      </input>
+      <output id="statusOut" label="Status" name="status" typeRef="string"/>
+      <rule id="rNullInput">
+        <description>Null local value is a required input error, never coerced to zero.</description>
+        <inputEntry id="rNullIn1"><text>false</text></inputEntry>
+        <inputEntry id="rNullIn2"><text>-</text></inputEntry>
+        <inputEntry id="rNullIn3"><text>-</text></inputEntry>
+        <outputEntry id="rNullOut"><text>"NULL_INPUT"</text></outputEntry>
+      </rule>
+      <rule id="rMissingRate">
+        <description>No rate for the exact currency/date/type: never infer from another period or version.</description>
+        <inputEntry id="rMissingIn1"><text>true</text></inputEntry>
+        <inputEntry id="rMissingIn2"><text>false</text></inputEntry>
+        <inputEntry id="rMissingIn3"><text>-</text></inputEntry>
+        <outputEntry id="rMissingOut"><text>"MISSING_RATE"</text></outputEntry>
+      </rule>
+      <rule id="rUnapprovedRate">
+        <description>Rate exists only under an unapproved version: never substituted.</description>
+        <inputEntry id="rUnapprovedIn1"><text>true</text></inputEntry>
+        <inputEntry id="rUnapprovedIn2"><text>true</text></inputEntry>
+        <inputEntry id="rUnapprovedIn3"><text>false</text></inputEntry>
+        <outputEntry id="rUnapprovedOut"><text>"UNAPPROVED_RATE"</text></outputEntry>
+      </rule>
+      <rule id="rTranslated">
+        <description>Exactly one applicable approved rate: deterministic translation.</description>
+        <inputEntry id="rTranslatedIn1"><text>true</text></inputEntry>
+        <inputEntry id="rTranslatedIn2"><text>true</text></inputEntry>
+        <inputEntry id="rTranslatedIn3"><text>true</text></inputEntry>
+        <outputEntry id="rTranslatedOut"><text>"TRANSLATED"</text></outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="fxTranslationDiagram">
+      <dmndi:DMNShape id="shapeStatus" dmnElementRef="fxTranslationStatus">
+        <dc:Bounds x="100" y="100" width="180" height="80"/>
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

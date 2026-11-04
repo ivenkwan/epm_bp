@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
+             xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/"
+             xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/"
+             id="integrated-statements" name="integrated-statements"
+             namespace="https://epm.dev/rules/planning">
+  <inputData id="requiredInputsPresentInput" name="requiredInputsPresent">
+    <variable id="requiredInputsPresentVar" name="requiredInputsPresent" typeRef="boolean"/>
+  </inputData>
+  <inputData id="statementsBalancedInput" name="statementsBalanced">
+    <variable id="statementsBalancedVar" name="statementsBalanced" typeRef="boolean"/>
+  </inputData>
+  <decision id="statementIntegrity" name="Statement Integrity">
+    <variable id="statementIntegrityVar" name="Statement Integrity" typeRef="string"/>
+    <informationRequirement id="reqInputsPresent">
+      <requiredInput href="#requiredInputsPresentInput"/>
+    </informationRequirement>
+    <informationRequirement id="reqBalanced">
+      <requiredInput href="#statementsBalancedInput"/>
+    </informationRequirement>
+    <decisionTable id="integrityTable" hitPolicy="FIRST">
+      <input id="inputsPresentCol" label="All required schedule inputs present (no nulls)">
+        <inputExpression id="inputsPresentExpr" typeRef="boolean">
+          <text>requiredInputsPresent</text>
+        </inputExpression>
+      </input>
+      <input id="balancedCol" label="Statements balance within declared rounding">
+        <inputExpression id="balancedExpr" typeRef="boolean">
+          <text>statementsBalanced</text>
+        </inputExpression>
+      </input>
+      <output id="integrityOut" label="Integrity" name="integrity" typeRef="string"/>
+      <rule id="rMissingInput">
+        <description>Null required input blocks everything: zero participates, null does not.</description>
+        <inputEntry id="rMissingIn1"><text>false</text></inputEntry>
+        <inputEntry id="rMissingIn2"><text>-</text></inputEntry>
+        <outputEntry id="rMissingOut"><text>"MISSING_REQUIRED_INPUT"</text></outputEntry>
+      </rule>
+      <rule id="rImbalance">
+        <description>Imbalance blocks submission and approval; a case is opened with coordinates.</description>
+        <inputEntry id="rImbalanceIn1"><text>true</text></inputEntry>
+        <inputEntry id="rImbalanceIn2"><text>false</text></inputEntry>
+        <outputEntry id="rImbalanceOut"><text>"IMBALANCE"</text></outputEntry>
+      </rule>
+      <rule id="rPass">
+        <description>Exact integrity within declared rounding rules.</description>
+        <inputEntry id="rPassIn1"><text>true</text></inputEntry>
+        <inputEntry id="rPassIn2"><text>true</text></inputEntry>
+        <outputEntry id="rPassOut"><text>"PASS"</text></outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="integrityDiagram">
+      <dmndi:DMNShape id="shapeIntegrity" dmnElementRef="statementIntegrity">
+        <dc:Bounds x="100" y="100" width="180" height="80"/>
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

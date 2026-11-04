@@ -1,0 +1,15 @@
+entity_id,period,statement,line_key,amount,rule_version
+ENT-101,2027-P01,PL,revenue_total,1500.00,icstm-1.0.0
+ENT-101,2027-P01,PL,opex_total,500.00,icstm-1.0.0
+ENT-101,2027-P01,PL,ebit,1000.00,icstm-1.0.0
+ENT-101,2027-P01,PL,tax,250.00,icstm-1.0.0
+ENT-101,2027-P01,PL,net_income,750.00,icstm-1.0.0
+ENT-101,2027-P01,BS,closing_cash,2500.00,icstm-1.0.0
+ENT-101,2027-P01,BS,assets_total,2750.00,icstm-1.0.0
+ENT-101,2027-P01,BS,liabilities_total,0.00,icstm-1.0.0
+ENT-101,2027-P01,BS,equity_total,2750.00,icstm-1.0.0
+ENT-101,2027-P01,BS,balance_difference,0.00,icstm-1.0.0
+ENT-101,2027-P01,CF,net_income,750.00,icstm-1.0.0
+ENT-101,2027-P01,CF,depreciation,50.00,icstm-1.0.0
+ENT-101,2027-P01,CF,capex,300.00,icstm-1.0.0
+ENT-101,2027-P01,CF,cash_flow_total,500.00,icstm-1.0.0
