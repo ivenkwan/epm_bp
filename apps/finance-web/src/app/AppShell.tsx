@@ -40,6 +40,10 @@ import {
   SCENARIOS,
   ScenariosPanel,
 } from '../features/scenarios/ScenariosPanel';
+import {
+  ALLOCATION_RUNS,
+  AllocationsPanel,
+} from '../features/allocations/AllocationsPanel';
 import { ErrorBanner } from '../components/ErrorBanner';
 
 /**
@@ -140,6 +144,7 @@ export function AppShell(): ReactNode {
             <PlanningCalendarPanel tasks={CALENDAR_TASKS} />
             <VarianceAnalysisPanel rows={VARIANCE_ROWS} />
             <ScenariosPanel scenarios={SCENARIOS} />
+            <AllocationsPanel runs={ALLOCATION_RUNS} />
           </section>
         ) : (
           <section aria-labelledby="reports-heading">

@@ -1403,11 +1403,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-029, AC-F-029-01, NFR-038, OQ-007; depends on Tasks 20, 46, 48.
 
-- [ ] Define approved cost pools, receivers, drivers, sequence, step-down behavior, materiality, residual rounding rule, effective scope, and independent expected allocation ledger.
-- [ ] Write failing tests for each step preserving total allocated value, source-to-receiver trace, residual rounding, zero/empty pools, invalid sequence, replay, and controlled reversal.
-- [ ] Implement simulation, independent approval, durable execution, immutable allocation ledger, and compensating reversal with idempotent run identity and no source-fact overwrite.
-- [ ] Build model configuration, simulation difference, approval, run, reversal, and trace-path views with explicit totals and rounding residuals.
-- [ ] Run AC-F-029-01 and multi-step golden/replay/reversal tests; expect every receiver to trace to its source pool and no unexplained allocated difference.
+- [x] Define approved cost pools, receivers, drivers, sequence, step-down behavior, materiality, residual rounding rule, effective scope, and independent expected allocation ledger.
+  - Result: `V034__allocation_models_and_ledger.sql` (renumbered from plan V032) — model/step/run/entry tables with LARGEST_REMAINDER residual rule and status CHECKs; step-down senders may be earlier-step receivers; signed expected ledger = PENDING owner input (golden arithmetic in tests stands in).
+- [x] Write failing tests for each step preserving total allocated value, source-to-receiver trace, residual rounding, zero/empty pools, invalid sequence, replay, and controlled reversal.
+  - Result: `AllocationIntegrityTest` 6/6 — exact step-total preservation (100.00 = 33.34+33.33+33.33), per-entry source→receiver traces with driver fractions, zero-pool no-op, sequence/unknown-pool refusals, idempotent replay, reversal exact-zero net with "cannot reverse a reversal".
+- [x] Implement simulation, independent approval, durable execution, immutable allocation ledger, and compensating reversal with idempotent run identity and no source-fact overwrite.
+  - Result: `AllocationService` (rule alloc-1.0.0) — validation precedes entry materialization; immutable `epm_allocation_entry`; compensating runs linked via `reversal_of`; no source-fact overwrite path exists.
+- [x] Build model configuration, simulation difference, approval, run, reversal, and trace-path views with explicit totals and rounding residuals.
+  - Result: `AllocationsPanel` (runs with steps, allocated totals, residual rule, Trace path/Reverse actions); `docs/runbooks/allocation-reversal.md`.
+- [x] Run AC-F-029-01 and multi-step golden/replay/reversal tests; expect every receiver to trace to its source pool and no unexplained allocated difference.
+  - Result: golden/replay/reversal green; step-down exclusion proven (earlier senders + self-allocation excluded, 240→120 correction evidence in test); FP&A signed totals = PENDING (owner-gated).
 
 **Done when:** F-029 passes with signed totals, reproducible step-down results, and reversible approved runs.  
 **Commit:** `feat(planning): add traceable multi-step allocation ledger`
