@@ -11,6 +11,10 @@ import {
   TRANSLATION_ROWS,
   PlanningSetupPanel,
 } from '../features/planning-setup/PlanningSetupPanel';
+import {
+  PLAN_VERSIONS,
+  PlanVersionsPanel,
+} from '../features/plan-versions/PlanVersionsPanel';
 import { ErrorBanner } from '../components/ErrorBanner';
 
 /**
@@ -106,6 +110,7 @@ export function AppShell(): ReactNode {
               schedules, and approvals. The browser never owns rates, formulas, or locks.
             </p>
             <PlanningSetupPanel rows={TRANSLATION_ROWS} />
+            <PlanVersionsPanel versions={PLAN_VERSIONS} />
           </section>
         ) : (
           <section aria-labelledby="reports-heading">

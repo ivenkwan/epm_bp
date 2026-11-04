@@ -1179,11 +1179,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-024, AC-F-024-01–03, NFR-HITL-002–003, OQ-006; depends on Tasks 14, 20, 40.
 
-- [ ] Write failing tests for seeding from Actuals/prior plan exactly once, source lineage, empty eligible selection, final approval lock, unauthorized edit, blank reopen reason, and reproducible approved versions.
-- [ ] Implement immutable Budget/Forecast versions with seed rules, assumptions, comparisons, independent approval, and lock state. Empty seeding returns a no-data outcome, never an approved empty plan.
-- [ ] Implement authorized reopen requests with nonblank reason, scope, approvals, new revision lineage, and subsequent relock; preserve the previously approved version unchanged.
-- [ ] Build copy/edit/submit/approve/lock/compare/reopen journeys with entitlement checks and visible source/version/lock provenance.
-- [ ] Run AC-F-024-01–03, replay, concurrent edit/approval, stale ETag, and restart tests; expect no duplicate seeded cells or unauthorized locked-version edits.
+- [x] Write failing tests for seeding from Actuals/prior plan exactly once, source lineage, empty eligible selection, final approval lock, unauthorized edit, blank reopen reason, and reproducible approved versions.
+  - Result: `PlanVersionTest` 10/10 — seed-exactly-once, per-cell source lineage refs, empty-selection no-data (empty plan not submittable), final-approval lock + reproducible SHA-256 content hash, unauthorized/stale/locked-edit refusals, blank reason/scope reopen refusals, new-revision lineage with prior version preserved, restart-from-state.
+- [x] Implement immutable Budget/Forecast versions with seed rules, assumptions, comparisons, independent approval, and lock state. Empty seeding returns a no-data outcome, never an approved empty plan.
+  - Result: `V029__plan_versions.sql` (renumbered from plan V027) + `PlanVersionService` — plan/cell/assumption/approval/reopen-request tables with nonblank CHECKs; DRAFT→SUBMITTED→LOCKED state machine; self-approval denied before entitlement; `processes/bpmn/plan-version-approval.bpmn` (review → gateway → final lock | rework) for the Kogito-coordinated flow (executed in Task 43's integration suite).
+- [x] Implement authorized reopen requests with nonblank reason, scope, approvals, new revision lineage, and subsequent relock; preserve the previously approved version unchanged.
+  - Result: `requestReopen`/`approveReopen` — entitlement + nonblank guards; approved reopen creates revision+1 DRAFT with `prior-plan:<id>:r<rev>` cell lineage; prior version returned SUPERSEDED with hash intact; rework→resubmit→relock proven (r2 hash differs from r1).
+- [x] Build copy/edit/submit/approve/lock/compare/reopen journeys with entitlement checks and visible source/version/lock provenance.
+  - Result: `PlanVersionsPanel` in finance-web Planning tab — per-revision rows with type, revision, status badges (Locked (immutable) / Superseded (preserved)), seed source, lock provenance, and Edit/Submit/Request-reopen actions; `docs/runbooks/plan-version-reopening.md` operational runbook.
+- [x] Run AC-F-024-01–03, replay, concurrent edit/approval, stale ETag, and restart tests; expect no duplicate seeded cells or unauthorized locked-version edits.
+  - Result: replay/restart/stale-revision tests green (25/25 module); duplicate seeding structurally impossible (PK + exactly-once guard); locked-version edit refused for every role; FP&A lock/reopen-policy sign-off = PENDING (owner-gated).
 
 **Done when:** F-024 criteria pass and FP&A signs lock/reopen policy and representative reproducible versions.  
 **Commit:** `feat(planning): add reproducible plan versions and approval locks`

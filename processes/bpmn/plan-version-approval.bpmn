@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             id="plan-version-approval-definitions"
+             targetNamespace="https://epm.dev/processes/planning"
+             typeLanguage="http://www.java.com/javaTypes"
+             expressionLanguage="http://www.mvel.org/2.0">
+  <process id="plan_version_approval" name="Plan Version Approval" isExecutable="true" processType="Private">
+    <!-- Coordinated by Kogito; all durable plan/financial state lives in PostgreSQL
+         (epm_plan_version). Timers never approve, lock, or publish. The final lock is
+         the consequence of the independent human approval only. -->
+    <startEvent id="versionSubmitted" name="Plan version submitted"/>
+    <sequenceFlow id="f1" sourceRef="versionSubmitted" targetRef="reviewTask"/>
+    <userTask id="reviewTask" name="Independent plan review">
+      <documentation>Reviewer checks seed lineage, assumptions, and comparisons. Reviewer must not be the submitter.</documentation>
+    </userTask>
+    <sequenceFlow id="f2" sourceRef="reviewTask" targetRef="approvalGateway"/>
+    <exclusiveGateway id="approvalGateway" name="Approved?" gatewayDirection="Diverging"/>
+    <sequenceFlow id="f3" sourceRef="approvalGateway" targetRef="finalLock">
+      <conditionExpression xsi:type="tFormalExpression">approved == true</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="f4" sourceRef="approvalGateway" targetRef="reworkTask">
+      <conditionExpression xsi:type="tFormalExpression">approved == false</conditionExpression>
+    </sequenceFlow>
+    <userTask id="finalLock" name="Final approval and lock">
+      <documentation>Final approval locks the version; the lock is a named-human act, never timer-driven.</documentation>
+    </userTask>
+    <sequenceFlow id="f5" sourceRef="finalLock" targetRef="versionLocked"/>
+    <userTask id="reworkTask" name="Return for rework">
+      <documentation>Rejection returns the version to DRAFT with comments; no lock occurs.</documentation>
+    </userTask>
+    <sequenceFlow id="f6" sourceRef="reworkTask" targetRef="versionReturned"/>
+    <endEvent id="versionLocked" name="Version locked"/>
+    <endEvent id="versionReturned" name="Version returned to draft"/>
+  </process>
+</definitions>
