@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             id="planning-cycle-definitions"
+             targetNamespace="https://epm.dev/processes/planning"
+             typeLanguage="http://www.java.com/javaTypes"
+             expressionLanguage="http://www.mvel.org/2.0">
+  <process id="planning_cycle" name="Planning Cycle" isExecutable="true" processType="Private">
+    <!-- Coordinated by Kogito; plan versions and financial state are Java/PostgreSQL-owned
+         (epm_plan_version, epm_planning_cycle/task/decision). Reminders and breach escalation change
+         visibility ONLY — they never approve, lock, publish, or close; reminder timers
+         and rejection/return semantics are Java-owned (PlanningCalendarService). The
+         process carries the required named-human sequence: final lock happens
+         exclusively when the last required level is completed by an eligible actor who
+         is not the preparer. -->
+    <startEvent id="cycleOpened" name="Planning cycle opened"/>
+    <sequenceFlow id="f1" sourceRef="cycleOpened" targetRef="prepareTask"/>
+    <userTask id="prepareTask" name="Prepare schedules and plan version">
+      <documentation>Preparer assembles schedules; seeding exactly once; submits for approval. Rejection returns here in the Java-owned calendar state.</documentation>
+    </userTask>
+    <sequenceFlow id="f2" sourceRef="prepareTask" targetRef="levelOneTask"/>
+    <userTask id="levelOneTask" name="Approval level 1 — division review">
+      <documentation>Eligible actor must differ from the preparer. Reminders and breach escalation are Java-owned (PlanningCalendarService) and never approve.</documentation>
+    </userTask>
+    <sequenceFlow id="f3" sourceRef="levelOneTask" targetRef="levelTwoTask"/>
+    <userTask id="levelTwoTask" name="Approval level 2 — FP&amp;A approval">
+      <documentation>Eligible actor must differ from the preparer and the level-1 approver.</documentation>
+    </userTask>
+    <sequenceFlow id="f4" sourceRef="levelTwoTask" targetRef="finalLockTask"/>
+    <userTask id="finalLockTask" name="Final approval and cycle lock">
+      <documentation>Final lock is a named-human act completing the last required level; timers never lock.</documentation>
+    </userTask>
+    <sequenceFlow id="f5" sourceRef="finalLockTask" targetRef="cycleClosed"/>
+    <endEvent id="cycleClosed" name="Cycle closed and plan locked"/>
+  </process>
+</definitions>

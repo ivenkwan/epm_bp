@@ -1234,11 +1234,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-026, F-034 playbook 6, AC-F-026-01–03, NFR-008, NFR-HITL-002–006, OQ-006; depends on Tasks 14, 30, 41–42.
 
-- [ ] Configure milestones, task ownership, approval levels, business calendars, delegation, due dates, reminders, overdue visibility, and final lock from signed FP&A policy.
-- [ ] Write failing tests for level-by-level progression, self-approval, rejection/resubmission, stale task cancellation, due-time reminders, breach escalation, restart, and no timer-driven approval/lock/publication/closure.
-- [ ] Implement durable Kogito planning processes with Java-owned plan versions and financial state. Independent eligible actors approve each required level before final lock.
-- [ ] Build progress board, assigned tasks, review/return/approve, delegation, and escalation views with complete decision/comment chronology.
-- [ ] Run AC-F-026-01–03, rejection playbook, restart/timer/delegation, and full planning-cycle tests; measure cycle timestamps against the proposed stabilized five-business-day target without claiming it prematurely.
+- [x] Configure milestones, task ownership, approval levels, business calendars, delegation, due dates, reminders, overdue visibility, and final lock from signed FP&A policy.
+  - Result: `V031__planning_calendar.sql` (renumbered from plan V029) — cycle/milestone/task/decision tables with append-only chronology; `PlanningCalendarService` encodes level assignees, due times, delegation, reminders, escalation, and final lock; FP&A policy sign-off = PENDING (owner-gated).
+- [x] Write failing tests for level-by-level progression, self-approval, rejection/resubmission, stale task cancellation, due-time reminders, breach escalation, restart, and no timer-driven approval/lock/publication/closure.
+  - Result: `PlanningCalendarTest` 7/7 (unit) + `PlanningCycleTest` 4/4 (integration) — premature-level refusal, preparer self-approval denied before all else, RETURN cancels stale open tasks + rework/resubmit, reminder-once + breach escalation with "never auto-approved", escalated task still human-completable, delegation recorded with independence, restart from records, process stays ACTIVE while a required approval waits (no timer advance), no service tasks or timer transitions in the definitions.
+- [x] Implement durable Kogito planning processes with Java-owned plan versions and financial state. Independent eligible actors approve each required level before final lock.
+  - Result: `processes/bpmn/planning-cycle.bpmn` (prepare → level 1 → level 2 → final lock) + `plan-version-approval.bpmn` executed on LightProcessRuntime/StaticProcessConfig with parked human tasks; final lock only on last-level named-human completion; plan/financial state Java/PostgreSQL-owned (epm_plan_version, epm_planning_*); restart-from-definitions proven.
+- [x] Build progress board, assigned tasks, review/return/approve, delegation, and escalation views with complete decision/comment chronology.
+  - Result: `PlanningCalendarPanel` in finance-web Planning tab — level/assignee/delegated-from/due/status rows with Approve/Return/Delegate actions and Escalated (overdue — visibility only) badge; `docs/runbooks/planning-cycle.md` runbook; decision chronology carried by `epm_planning_decision` (APPROVE/RETURN/COMMENT/DELEGATE/ESCALATE/REMIND/SUBMIT/LOCK/CANCEL).
+- [x] Run AC-F-026-01–03, rejection playbook, restart/timer/delegation, and full planning-cycle tests; measure cycle timestamps against the proposed stabilized five-business-day target without claiming it prematurely.
+  - Result: all suites green; cycle-time measurement delivered (businessDaysBetween + measure vs 5-day target — 4 business days within, 7 exceeds, reported not claimed); representative signed cycle completion = PENDING owner sign-off.
 
 **Done when:** F-026 criteria pass and a representative planning cycle completes with named approvals, intact evidence, and no automatic authority.  
 **Commit:** `feat(planning): coordinate durable planning calendar and approvals`

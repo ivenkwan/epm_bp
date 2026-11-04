@@ -20,6 +20,10 @@ import {
   PlanningModelPanel,
   STATEMENT_ROWS,
 } from '../features/planning-model/PlanningModelPanel';
+import {
+  CALENDAR_TASKS,
+  PlanningCalendarPanel,
+} from '../features/planning-calendar/PlanningCalendarPanel';
 import { ErrorBanner } from '../components/ErrorBanner';
 
 /**
@@ -117,6 +121,7 @@ export function AppShell(): ReactNode {
             <PlanningSetupPanel rows={TRANSLATION_ROWS} />
             <PlanVersionsPanel versions={PLAN_VERSIONS} />
             <PlanningModelPanel statementRows={STATEMENT_ROWS} balanceChecks={BALANCE_CHECKS} />
+            <PlanningCalendarPanel tasks={CALENDAR_TASKS} />
           </section>
         ) : (
           <section aria-labelledby="reports-heading">
