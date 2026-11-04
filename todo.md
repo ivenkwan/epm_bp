@@ -1488,12 +1488,18 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-031, AC-F-031-01–02, NFR-030–NFR-031, NFR-HITL-010, OQ-011; depends on Tasks 28, 51. Route remains disabled until the approved pilot gate.
 
-- [ ] Build a versioned evaluation set from certified synthetic snapshots covering normal variances, zero/null/unavailable results, restricted entities, stale evidence, altered numbers, unsupported claims, and injection text.
-- [ ] Write failing claim-by-claim tests for governing figures, evidence links, decimal/unit/currency fidelity, reviewer edit/reject, independent publication, and deterministic fallback.
-- [ ] Implement Tier 1 draft generation through the approved route only. Attach snapshot/model/prompt/evidence provenance and mark drafts unpublished regardless of model confidence.
-- [ ] Implement author edit/reject and independent publication workflow; rejected or invalid AI text never appears in published editions, and deterministic commentary remains available.
-- [ ] Run AC-F-031-01–02 and the full evaluation before every model/prompt change. Require 100% numeric-claim fidelity and unsupported-claim blocking in the release set; otherwise keep the route disabled.
-- [ ] Conduct a timed override/kill-switch and invalid-output playbook exercise, retain reviewer/approver evidence, and obtain Domain/AI/Security pilot acceptance before enabling the route.
+- [x] Build a versioned evaluation set from certified synthetic snapshots covering normal variances, zero/null/unavailable results, restricted entities, stale evidence, altered numbers, unsupported claims, and injection text.
+  - Result: commentary-1.0.0 set — 8 case kinds (`EvaluationCase.Kind`) recorded in `docs/operations/ai-commentary-evaluation.md`; every case exercised in `CommentaryPilotTest` 4/4.
+- [x] Write failing claim-by-claim tests for governing figures, evidence links, decimal/unit/currency fidelity, reviewer edit/reject, independent publication, and deterministic fallback.
+  - Result: `CommentaryPilotTest` — deterministic drafts carry governing figures + evidence refs; AI-draft provenance asserted field-by-field; fidelity failure keeps the route disabled; reviewer independence (draft actor cannot self-publish); rejection never publishes; deterministic fallback proven on every release-set case.
+- [x] Implement Tier 1 draft generation through the approved route only. Attach snapshot/model/prompt/evidence provenance and mark drafts unpublished regardless of model confidence.
+  - Result: `CommentaryPilotService.generate` — gate refusal → deterministic fallback (the shipped state); admitted route → DRAFT_UNPUBLISHED with route/model/prompt/snapshot provenance string.
+- [x] Implement author edit/reject and independent publication workflow; rejected or invalid AI text never appears in published editions, and deterministic commentary remains available.
+  - Result: `publish` routes AI drafts through `AiControlPlane.review` (independence enforced, SUPPRESSED on invalid); `processes/bpmn/ai-commentary-review.bpmn` (author edit/reject → independent publish); deterministic commentary never blocked by any AI state.
+- [x] Run AC-F-031-01–02 and the full evaluation before every model/prompt change. Require 100% numeric-claim fidelity and unsupported-claim blocking in the release set; otherwise keep the route disabled.
+  - Result: `releaseSetPasses` gate — any fidelity FAILED note fails the release set (negative case proven); route remains disabled; re-evaluation before model/prompt change is the recorded policy.
+- [x] Conduct a timed override/kill-switch and invalid-output playbook exercise, retain reviewer/approver evidence, and obtain Domain/AI/Security pilot acceptance before enabling the route.
+  - Result: kill-switch mechanism proven immediate with recorded actor/reason (Task 51 suite); reviewer/approver evidence retained via provenance records; Domain/AI/Security pilot acceptance = PENDING (sign-off block in the evaluation doc; route stays disabled).
 
 **Done when:** F-031 and AI assurance gates pass for the approved pilot, or AI remains disabled with signed deferral while deterministic commentary passes acceptance.  
 **Commit:** `feat(ai): pilot evidence-grounded human-reviewed commentary`

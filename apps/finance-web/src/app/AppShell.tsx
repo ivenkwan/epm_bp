@@ -48,6 +48,10 @@ import {
   ELIMINATIONS,
   ManagementEliminationsPanel,
 } from '../features/management-eliminations/ManagementEliminationsPanel';
+import {
+  PILOT_STATUS,
+  AiCommentaryPanel,
+} from '../features/ai-commentary/AiCommentaryPanel';
 import { ErrorBanner } from '../components/ErrorBanner';
 
 /**
@@ -150,6 +154,7 @@ export function AppShell(): ReactNode {
             <ScenariosPanel scenarios={SCENARIOS} />
             <AllocationsPanel runs={ALLOCATION_RUNS} />
             <ManagementEliminationsPanel rows={ELIMINATIONS} />
+            <AiCommentaryPanel status={PILOT_STATUS} />
           </section>
         ) : (
           <section aria-labelledby="reports-heading">
