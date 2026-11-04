@@ -58,6 +58,7 @@ F-041,feature,in_scope,R1;R3;R4,7;32;45;47,US-015,tests/e2e/accessibility/shell.
 F-042,feature,in_scope,R0;R1;R2;R3,15;33;37;46,US-005,tests/integration/migration/MigrationReplayTest.java;tests/integration/recovery/TreasuryRecoveryTest.java;tests/integration/migration/PlanningMigrationTest.java
 F-043,feature,excluded,EXCLUDED,50;56,-,tests/integration/planning/ManagementEliminationTest.java;docs/operations/final-acceptance.md
 F-044,feature,excluded,EXCLUDED,6;14;29;30;51;56,-,tests/contract/api-safety/;tests/integration/process/CaseRecoveryTest.java;tests/integration/adjustments/AdjustmentControlTest.java;tests/security/privileged-access/BreakGlassTest.java;tests/ai-evaluation/security/;docs/operations/final-acceptance.md
+F-045,feature,in_scope,R4,9;57,US-004,services/finance-admin/src/test/java/.../MappingStudioTest.java;apps/finance-web/src/features/mapping-studio/;tests/e2e/administration/mapping-studio.spec.ts
 AC-F-001-01,acceptance_criterion,in_scope,R0,9,US-004;US-010,services/finance-admin/src/test/java/.../HierarchyResolutionTest.java
 AC-F-001-02,acceptance_criterion,in_scope,R0,9,US-004;US-010,services/finance-admin/src/test/java/.../HierarchyResolutionTest.java
 AC-F-001-03,acceptance_criterion,in_scope,R0,9,US-004;US-010,services/finance-admin/src/test/java/.../HierarchyResolutionTest.java
@@ -159,6 +160,9 @@ AC-F-041-01,acceptance_criterion,in_scope,R1;R3;R4,7;32;45;47,US-015,tests/e2e/a
 AC-F-042-01,acceptance_criterion,in_scope,R0;R1;R2;R3,15;33;37;46,US-005,tests/integration/migration/MigrationReplayTest.java
 AC-F-042-02,acceptance_criterion,in_scope,R0;R1;R2;R3,15;33;37;46,US-005,tests/integration/migration/MigrationReplayTest.java
 AC-F-042-03,acceptance_criterion,in_scope,R0;R1;R2;R3,15;33;37;46,US-005,tests/integration/migration/MigrationReplayTest.java
+AC-F-045-01,acceptance_criterion,in_scope,R4,57,US-004,tests/e2e/administration/mapping-studio.spec.ts
+AC-F-045-02,acceptance_criterion,in_scope,R4,57,US-004,services/finance-admin/src/test/java/.../MappingStudioTest.java
+AC-F-045-03,acceptance_criterion,in_scope,R4,57,US-004,services/finance-admin/src/test/java/.../MappingStudioTest.java;tests/e2e/administration/mapping-studio.spec.ts
 NFR-001,nfr,in_scope,R0;R4,4;16;56,-,scripts/setup/create-local-cluster.sh;docs/operations/r0-evidence-pack.md;docs/operations/r4-evidence-pack.md
 NFR-002,nfr,in_scope,R0,2;6;16,-,tests/integration/toolchain/ToolchainCompatibilityTest.java;tests/contract/api-safety/;docs/operations/r0-evidence-pack.md
 NFR-003,nfr,in_scope,R0;R1;R3;R4,6;7;32;45;47,-,apps/finance-web/src/api/generated/;tests/e2e/accessibility/shell.spec.ts;docs/operations/browser-compatibility-matrix.md

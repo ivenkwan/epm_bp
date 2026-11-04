@@ -82,7 +82,7 @@ Each story is independently valuable, negotiable in implementation, estimable fr
 
 | ID | INVEST user story | Independent value and test focus | Mapped features |
 |---|---|---|---|
-| **US-004** | As a Group Finance/EPM & Data Stewardship user, I want effective-dated master data and authoritative source contracts, so that historical and current reports use the intended structures. | A hierarchy or mapping change can be tested independently; verify effective dates, provenance, and version history. | F-001, F-002, F-010, F-036 |
+| **US-004** | As a Group Finance/EPM & Data Stewardship user, I want effective-dated master data and authoritative source contracts, so that historical and current reports use the intended structures. | A hierarchy or mapping change can be tested independently; verify effective dates, provenance, and version history. | F-001, F-002, F-010, F-036, F-045 |
 | **US-005** | As a Group Finance/EPM & Data Stewardship user, I want scheduled and template data to be validated, reconciled, and refreshed through one control path, so that only trusted data reaches reports. | One source load demonstrates end-to-end value; verify landing, quarantine, reconciliation, certification, and republication. | F-002, F-003, F-004, F-005, F-006, F-007, F-014, F-042 |
 | **US-006** | As a Group Finance/EPM & Data Stewardship user, I want a certified KPI catalog and governed rule changes, so that every product calculates the same measure consistently. | One KPI can be defined and reused independently; verify formula ownership, simulation, lineage, and documentation. | F-008, F-009, F-036, F-040 |
 
@@ -169,18 +169,19 @@ Each story is independently valuable, negotiable in implementation, estimable fr
 | **F-042** | Historical migration, cutover, and parallel run | Migrates approved history and opening versions with reconciliation, rehearsal, parallel operation, fallback, and controlled retirement. | Migration register, legacy extracts, cutoff, mappings, control totals. | Reconciled migrated data, go/no-go evidence, archive and rollback status. | Owners rehearse, compare, sign, cut over, and authorize retirement. | US-005 | **Must** — continuity and trusted opening balances are launch prerequisites. |
 | **F-043** | Statutory consolidation replacement | Excludes replacement of statutory consolidation, legal consolidation policy, and statutory reporting from this product cycle. | Excluded; no product input accepted for this purpose. | No statutory consolidation capability delivered. | Requests are routed to a separate discovery and authorization process. | — | **Won’t** — management-only eliminations must not be mistaken for statutory consolidation. |
 | **F-044** | Autonomous payments, GL posting, and financial approvals | Excludes payment initiation, general-ledger posting, and autonomous financial approval or release authority. | Excluded; no autonomous financial instruction accepted. | No payment, posting, certification, publication, or approval executed by AI. | Attempts are denied and logged; only authorized human workflows remain available. | — | **Won’t** — preserves financial accountability and prevents unsafe automation. |
+| **F-045** | Mapping studio for business-owned effective-dated mappings | Business users maintain effective-dated mapping tables (including chart of accounts), accounts, and group mappings through a visual, intuitive studio as governed configuration — never as vendor-side code changes — with no loss of history. | Mapping/membership rows, effective dates, reasons, approvals. | Versioned mappings with old/new evidence, impact preview, and deterministic historical resolution. | Stewards search, edit visually on timelines/grids, compare versions side by side, submit for approval, activate, and roll back as a new version. | US-004 | **Must** — business ownership of mappings without engineering involvement is a launch prerequisite for autonomous operation. |
 
 ### 4.2 Priority Validation
 
-| Priority | Feature IDs | Count | Share of 44 | Required ACs per feature | Expected ACs |
+| Priority | Feature IDs | Count | Share of 45 | Required ACs per feature | Expected ACs |
 |---|---|---:|---:|---:|---:|
-| **Must** | F-001–F-008, F-010, F-011, F-014–F-018, F-023–F-026, F-034, F-035, F-039, F-042 | 23 | 52.27% | 3 | 69 |
-| **Should** | F-009, F-012, F-013, F-019–F-021, F-027, F-028, F-031, F-036–F-038, F-040 | 13 | 29.55% | 2 | 26 |
-| **Could** | F-022, F-029, F-030, F-032, F-033, F-041 | 6 | 13.64% | 1 | 6 |
-| **Won’t** | F-043, F-044 | 2 | 4.55% | 0 | 0 |
-| **Total** | F-001–F-044 | **44** | **100%** | — | **101** |
+| **Must** | F-001–F-008, F-010, F-011, F-014–F-018, F-023–F-026, F-034, F-035, F-039, F-042, F-045 | 24 | 53.33% | 3 | 72 |
+| **Should** | F-009, F-012, F-013, F-019–F-021, F-027, F-028, F-031, F-036–F-038, F-040 | 13 | 28.89% | 2 | 26 |
+| **Could** | F-022, F-029, F-030, F-032, F-033, F-041 | 6 | 13.33% | 1 | 6 |
+| **Won’t** | F-043, F-044 | 2 | 4.44% | 0 | 0 |
+| **Total** | F-001–F-045 | **45** | **100%** | — | **104** |
 
-Must features comprise **52.27%**, below the 60% ceiling. Every Must dependency chain terminates at governed identity, master data, authoritative source evidence, and immutable audit rather than at an optional AI capability.
+Must features comprise **53.33%**, below the 60% ceiling. Every Must dependency chain terminates at governed identity, master data, authoritative source evidence, and immutable audit rather than at an optional AI capability.
 
 ## 5. Feature Dependencies
 
@@ -233,6 +234,7 @@ flowchart LR
     F041[F-041 Responsive browser] -. presents .-> F013
     F042[F-042 Migration and cutover] --> F005
     F042 --> F024
+    F001 --> F045[F-045 Mapping studio]
     F043[F-043 Statutory consolidation replacement]:::wont
     F044[F-044 Autonomous financial execution]:::wont
     F030 -. never becomes .-> F043
@@ -767,7 +769,7 @@ flowchart LR
 | **R1 — DTR lighthouse** | End-to-end F-003, F-004, F-006, F-007, F-009, F-014, F-015, F-016–F-021 representative scope, F-034/F-035 operation, F-037/F-038 base, F-041 evaluation, initial F-042. | R0 passed; representative cohort and source rules signed. | Daily parallel runs, reconciliation, security, performance, deployment, fallback, and training evidence support scale/remediate/stop. |
 | **R2 — DTR scale** | Scale F-003–F-007 and F-014–F-021; optional F-022; complete treasury F-034/F-037/F-038 and DTR migration/cutover in F-042. | R1 gate authorizes scale; confirmed population and readiness by source/entity. | All confirmed in-scope treasury outputs accepted or explicit signed exceptions; restore, parallel run, cutover, and operational handover pass. |
 | **R3 — EPM and non-driver planning** | F-011–F-015 recurring reporting, F-023–F-027, shared F-034–F-039, F-041, and planning migration in F-042. | Certified actuals, KPI cards, report layouts, planning rules, and calendar approved. | Management packs and integrated P&L/BS/CF accepted; weekly/monthly refresh, approvals, variance, security, and performance pass. |
-| **R4 — Advanced planning, reporting, and selective AI** | F-012/F-013 full experience, F-028–F-033, F-036/F-040 enhancements; F-041 optional responsive completion. F-043/F-044 remain excluded. | R3 stable; advanced model rules and AI governance/evaluation approved. | Scenario/allocation/management-elimination reconciliation, AI grounding, accessibility, DR, clean deployment, documentation, and final business acceptance pass. |
+| **R4 — Advanced planning, reporting, and selective AI** | F-012/F-013 full experience, F-028–F-033, F-036/F-040 enhancements, F-045 mapping studio; F-041 optional responsive completion. F-043/F-044 remain excluded. | R3 stable; advanced model rules and AI governance/evaluation approved. | Scenario/allocation/management-elimination reconciliation, AI grounding, accessibility, DR, clean deployment, documentation, and final business acceptance pass. |
 
 Should/Could scope cannot displace a failing Must control. Any release exception requires an owner, rationale, remediation date, and explicit acceptance of residual risk.
 
@@ -1085,6 +1087,14 @@ Each criterion is independently verifiable. Must features include happy-path, er
 | **AC-F-042-01** | Happy path | Approved history, mappings, cutoffs, and control totals are available | Migration and parallel run complete | Source and target totals reconcile, owners sign the result, and archive, fallback, and cutover evidence are retained |
 | **AC-F-042-02** | Error | A migrated opening balance or historical total differs beyond tolerance | Go-live approval is requested | The system blocks cutover for the affected scope, records the exception, and keeps the controlled fallback active |
 | **AC-F-042-03** | Boundary | A source record arrives exactly at cutoff and the migration replay is run twice | Cutover scope and replay results are evaluated | The record is treated by the configured inclusive rule and replay produces no duplicate migrated facts or versions |
+
+### F-045 — Mapping Studio for Business-Owned Effective-Dated Mappings
+
+| AC ID | Case | Given | When | Then |
+|---|---|---|---|---|
+| **AC-F-045-01** | Happy path | A steward is entitled to maintain mappings and the effective-dated mapping tables, chart of accounts, accounts, and group mappings are governed | The steward creates or changes mappings through the visual studio and an independent approver activates the version | The change takes effect only from its effective date, no vendor-side code change occurs, and the studio shows version, effective basis, actor, reason, and UTC provenance |
+| **AC-F-045-02** | Error | A proposed change overlaps an existing effective-dated version, creates a duplicate, breaks group-mapping integrity, or is attempted by an unauthorized actor | Activation is requested | The system refuses the change with an actionable error, leaves active mappings untouched, and records the refused attempt as evidence |
+| **AC-F-045-03** | Boundary | Reports already issued against a prior mapping version are re-run after several mapping changes and a rollback | Historical resolution and rollback are evaluated | Historical reports resolve only to the version effective at their date, every change (including rollback) appends a new version with old/new evidence, and no history is ever deleted |
 
 ### F-043 — Statutory Consolidation Replacement
 

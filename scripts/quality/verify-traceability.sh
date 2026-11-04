@@ -35,7 +35,7 @@ awk '{ sub(/\r$/, ""); print }' "$csv_path" > "$normalized"
 expected="$tmp_dir/expected-ids"
 : > "$expected"
 for ((i = 1; i <= 15; i++)); do printf 'US-%03d\n' "$i" >> "$expected"; done
-for ((i = 1; i <= 44; i++)); do printf 'F-%03d\n' "$i" >> "$expected"; done
+for ((i = 1; i <= 45; i++)); do printf 'F-%03d\n' "$i" >> "$expected"; done
 awk '{
   while (match($0, /AC-F-[0-9]{3}-[0-9]{2}/)) {
     print substr($0, RSTART, RLENGTH)
@@ -43,23 +43,23 @@ awk '{
   }
 }' "$prd_path" | sort -u > "$tmp_dir/ac-ids"
 ac_count=$(wc -l < "$tmp_dir/ac-ids")
-if [ "$ac_count" -ne 101 ]; then
-  error "PRD contains $ac_count unique acceptance-criterion IDs; expected 101"
+if [ "$ac_count" -ne 104 ]; then
+  error "PRD contains $ac_count unique acceptance-criterion IDs; expected 104"
 fi
 cat "$tmp_dir/ac-ids" >> "$expected"
 for ((i = 1; i <= 40; i++)); do printf 'NFR-%03d\n' "$i" >> "$expected"; done
 for ((i = 1; i <= 12; i++)); do printf 'NFR-HITL-%03d\n' "$i" >> "$expected"; done
 sort -u "$expected" -o "$expected"
 expected_count=$(wc -l < "$expected")
-if [ "$expected_count" -ne 212 ]; then
-  error "authoritative requirement inventory contains $expected_count IDs; expected 212"
+if [ "$expected_count" -ne 216 ]; then
+  error "authoritative requirement inventory contains $expected_count IDs; expected 216"
 fi
 
 tail -n +2 "$normalized" | cut -d, -f1 | sort > "$tmp_dir/actual-all"
 sort -u "$tmp_dir/actual-all" > "$tmp_dir/actual"
 actual_count=$(wc -l < "$tmp_dir/actual")
-if [ "$actual_count" -ne 212 ]; then
-  error "traceability register contains $actual_count unique requirement IDs; expected 212"
+if [ "$actual_count" -ne 216 ]; then
+  error "traceability register contains $actual_count unique requirement IDs; expected 216"
 fi
 comm -23 "$expected" "$tmp_dir/actual" > "$tmp_dir/missing"
 comm -13 "$expected" "$tmp_dir/actual" > "$tmp_dir/extra"
@@ -244,4 +244,4 @@ if [ "$failures" -ne 0 ]; then
   exit 1
 fi
 
-printf 'PASS: 212 requirements traced with zero unmapped IDs\n'
+printf 'PASS: 216 requirements traced with zero unmapped IDs\n'

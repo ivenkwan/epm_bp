@@ -39,10 +39,10 @@ Every task implicitly includes all of these constraints.
 These high-risk conditions receive explicit tests in the owning tasks, not only happy-path review.
 
 1. **Null, zero, empty, and unavailable values:** null must not silently become zero, zero must remain numeric, empty source populations must not become certified products, and zero denominators must produce governed unavailable results. Pinned in Tasks 3, 12, 18, 19, 23, 26, 41, and 42.
-2. **Exact boundaries and conflicting time bases:** effective-date adjacency, inclusive/exclusive tolerances, T0 and T0+1s, DST-safe business calendars, and source versus receiving timestamps must preserve meaning. Pinned in Tasks 9, 20, 22, 26, 28, 33, and 40.
+2. **Exact boundaries and conflicting time bases:** effective-date adjacency, inclusive/exclusive tolerances, T0 and T0+1s, DST-safe business calendars, and source versus receiving timestamps must preserve meaning. Pinned in Tasks 9, 20, 22, 26, 28, 33, 40, and 57.
 3. **Decimal, FX, sign, and rounding behavior:** negative overdrafts, currency scale, residual allocation rounding, opening/closing continuity, and statement balance must reconcile without floats. Pinned in Tasks 5, 6, 23, 24, 40, 42, and 49.
 4. **Replay, concurrency, restart, and stale projections:** duplicate delivery, changed-payload idempotency reuse, stale ETags, process restart, outbox redelivery, and lagging AGE watermarks must not duplicate effects or permit certification. Pinned in Tasks 5, 6, 14, 17, 20, 21, 29, and 50.
-5. **Entitlement and authority leakage:** restricted entities, empty scopes, self-approval, expired delegation, break-glass financial edits, exports, drill paths, prompts, and evidence links must fail closed without data leakage. Pinned in Tasks 8, 20, 30, 31, 39, 47, and 51–54.
+5. **Entitlement and authority leakage:** restricted entities, empty scopes, self-approval, expired delegation, break-glass financial edits, exports, drill paths, prompts, and evidence links must fail closed without data leakage. Pinned in Tasks 8, 20, 30, 31, 39, 47, 51–54, and 57.
 
 ## Execution Rules
 
@@ -1531,6 +1531,27 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 **Done when:** Advanced administration and AI-SDLC controls pass, all changes are traceable, and no autonomous deployment path exists.  
 **Commit:** `feat(governance): complete controlled promotion and living provenance`
 
+### Task 57: Mapping studio for business-owned effective-dated mappings
+
+**Files:**
+- Create: `db/migrations/V033__mapping_studio.sql`
+- Create: `services/finance-admin/src/main/java/.../mappingstudio/`
+- Create: `apps/finance-web/src/features/mapping-studio/`
+- Create: `services/finance-admin/src/test/java/.../MappingStudioTest.java`
+- Create: `tests/e2e/administration/mapping-studio.spec.ts`
+- Create: `docs/runbooks/mapping-studio-change.md`
+
+**Requirements / dependencies:** F-045, AC-F-045-01–03, NFR-013–NFR-015, NFR-026; depends on Tasks 8, 9, 14, 47.
+
+- [ ] Build the visual mapping studio over the Task 9 effective-dated foundation: business users maintain mapping tables (including chart of accounts), accounts, and group mappings as governed configuration — never as vendor-side code changes.
+- [ ] Write failing tests for effective-date overlaps and gaps, duplicate stable IDs, group-mapping integrity (exactly one governed group per consolidation scope), unauthorized edits, mass-change impact preview, and rollback without history loss.
+- [ ] Implement the intuitive maintenance journeys: searchable mapping grids, timeline views of effective dating, visual hierarchy/group assignment, side-by-side old/new compare, and propose/approve activation with visible version, effective basis, actor, reason, and UTC provenance.
+- [ ] Prove no loss of history end to end: every change (including rollback) appends a versioned row with old/new evidence; historical reports keep resolving only to the version effective at their date; nothing is deleted or overwritten.
+- [ ] Run AC-F-045-01–03 browser journeys (desktop and 200% zoom), authorization-negative tests, and steward usability walkthroughs with named business-owner acceptance.
+
+**Done when:** business users maintain effective-dated mappings end to end without engineering involvement, every change preserves full history, and the studio passes accessibility and entitlement gates.  
+**Commit:** `feat(mapping-studio): deliver business-owned effective-dated mapping maintenance`
+
 ### Task 56: Final cross-platform recovery and product acceptance
 
 **Files:**
@@ -1542,9 +1563,9 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 - Create: `tests/security/final/`
 - Create: `scripts/operations/verify-final-recovery.sh`
 
-**Requirements / dependencies:** R4 exit, every release-applicable F-001–F-042 AC, NFR-001–NFR-040, NFR-HITL-001–NFR-HITL-012, F-043/F-044 exclusions; depends on Tasks 47–55 and all prior release gates.
+**Requirements / dependencies:** R4 exit, every release-applicable F-001–F-045 AC, NFR-001–NFR-040, NFR-HITL-001–NFR-HITL-012, F-043/F-044 exclusions; depends on Tasks 47–55, 57 and all prior release gates.
 
-- [ ] Run the complete requirements traceability and acceptance suites, including all 101 ACs in their applicable releases, all 12 human-intervention playbooks, independent financial expectations, and explicit F-043/F-044 adversarial denial tests.
+- [ ] Run the complete requirements traceability and acceptance suites, including all 104 ACs in their applicable releases, all 12 human-intervention playbooks, independent financial expectations, and explicit F-043/F-044 adversarial denial tests.
 - [ ] Deploy the tagged release from a clean checkout onto two independently provisioned conformant Kubernetes environments with no source change. Verify migrations, gateway, OIDC, rules, processes, telemetry, SBOM, rollback/roll-forward, and current runbooks.
 - [ ] Execute final signed daily/monthly, dashboard/drill, pack, 2× peak, backlog, planning, scenario, allocation, and export workloads. Publish p50/p95/p99, data shapes, concurrency, cache, network, failures, resource use, cost, and independently reproducible results against proposed targets.
 - [ ] Perform witnessed backup/restore, RPO/RTO, instance loss, process/timer recovery, AGE deletion/rebuild, outbox replay, publication hold, independent financial reconciliation, incident command, and manual-fallback exercises.
@@ -1610,6 +1631,7 @@ The matrices are execution controls, not informational appendices. Update the ow
 | F-040 AI-SDLC/provenance/documentation | AC-F-040-01–02 | 1, 2, 55 | R0 repository controls; R4 living provenance |
 | F-041 Responsive mobile browser | AC-F-041-01 | 7, 32, 45, 47 | R1 evaluation; R3/R4 applicable journey acceptance |
 | F-042 Migration/cutover/parallel run | AC-F-042-01–03 | 15, 33, 37, 46 | R0 plan; R1 trial; R2 DTR; R3 planning evidence |
+| F-045 Mapping studio for business-owned mappings | AC-F-045-01–03 | 9, 57 | R0 effective-dated foundation; R4 visual studio, history-preservation, and steward acceptance evidence |
 | F-043 Statutory consolidation replacement | Excluded; no ACs | 50, 56 | Negative statutory-representation and boundary tests |
 | F-044 Autonomous payment/posting/approval | Excluded; no ACs | 6, 14, 29–30, 51, 56 | Negative API, workflow, AI, timer, and privilege tests |
 
