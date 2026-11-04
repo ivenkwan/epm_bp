@@ -8,6 +8,14 @@ import {
   ManagementReportsPanel,
 } from '../features/management-reports/ManagementReportsPanel';
 import {
+  DASHBOARD_TILES,
+  DashboardsPanel,
+} from '../features/dashboards/DashboardsPanel';
+import {
+  WORKSPACE_EDITIONS,
+  ReportingWorkspacePanel,
+} from '../features/reporting-workspace/ReportingWorkspacePanel';
+import {
   TRANSLATION_ROWS,
   PlanningSetupPanel,
 } from '../features/planning-setup/PlanningSetupPanel';
@@ -138,6 +146,8 @@ export function AppShell(): ReactNode {
             <StatusSlot label="Certification" value="Not yet available" />
             <StatusSlot label="Freshness" value="Not yet available" />
             <ManagementReportsPanel packs={MANAGEMENT_PACKS} />
+            <DashboardsPanel tiles={DASHBOARD_TILES} />
+            <ReportingWorkspacePanel editions={WORKSPACE_EDITIONS} />
             <LiquidityContextPanel enabled={false} />
           </section>
         )}

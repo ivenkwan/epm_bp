@@ -210,3 +210,9 @@ form button {
   color: #8a1c11;
   border: 1px solid #8a1c11;
 }
+
+/* Task 45 reflow: data tables scroll in one dimension inside the main region so the
+   page itself never scrolls two-dimensionally at 200% zoom (WCAG 1.4.10). */
+#main-content {
+  overflow-x: auto;
+}

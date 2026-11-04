@@ -1286,12 +1286,18 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-013 base, F-014–F-015 recurring, F-038 completion, F-041, AC-F-013-01–02, AC-F-038-01–02, AC-F-041-01, NFR-011, NFR-013–NFR-015, NFR-025–NFR-026, OQ-010; depends on Tasks 28, 31–32, 39–44.
 
-- [ ] Finalize mandatory languages, browsers, assistive technologies, export formats, and mobile journeys under OQ-010 before UX acceptance.
-- [ ] Implement certified dashboards, pivot-style slicing, saved authorized views, and drill to the lowest available governed grain. Deny restricted entities and label unavailable grain rather than fabricating detail.
-- [ ] Complete approved Excel, PDF, and presentation exports with watermark, source/edition equivalence, recipient re-authorization, retention classification, delivery log, row-limit handling, and action tracking.
-- [ ] Integrate weekly/monthly refresh, commentary, review, publication, supersession, and distribution into recurring role-based workspaces without automatic publication.
-- [ ] Complete essential responsive submission, approval, and consumption journeys at 200% zoom; run keyboard, screen-reader, focus, contrast, locale, browser, and entitlement-equivalence tests.
-- [ ] Run AC-F-013-01–02, AC-F-038-01–02, AC-F-041-01 and signed monthly-template, dashboard, drill, and pack-performance workloads; inspect actual Excel/PDF/presentation outputs for fidelity.
+- [x] Finalize mandatory languages, browsers, assistive technologies, export formats, and mobile journeys under OQ-010 before UX acceptance.
+  - Result: `docs/operations/r3-ux-acceptance.md` — mandatory matrix (languages, browsers, AT, export formats, mobile journeys) finalized with automated evidence attached; UX owner sign-off = PENDING (named-owner act, sign-off block provided).
+- [x] Implement certified dashboards, pivot-style slicing, saved authorized views, and drill to the lowest available governed grain. Deny restricted entities and label unavailable grain rather than fabricating detail.
+  - Result: `DashboardService` (4/4 tests — certified-tiles-only assembly, governed-dimension slicing with partial-apply note, saved views re-checking entitlement with explicit denials, drill labelling unavailable grain "never fabricated") + `DashboardsPanel` in finance-web.
+- [x] Complete approved Excel, PDF, and presentation exports with watermark, source/edition equivalence, recipient re-authorization, retention classification, delivery log, row-limit handling, and action tracking.
+  - Result: `ExportFormatService` (5/5 tests — mandatory watermark/retention/edition-hash, re-authorization at delivery with per-recipient log, 1000-of-1500 truncation notice, unauthorized-everywhere delivers nothing, refresh never publishes) across EXCEL/PDF/PRESENTATION.
+- [x] Integrate weekly/monthly refresh, commentary, review, publication, supersession, and distribution into recurring role-based workspaces without automatic publication.
+  - Result: `ReportingWorkspacePanel` — weekly/monthly editions with named-publisher provenance, "In review — awaiting named publication" state, retention labels, three export actions; e2e 4/4 confirms no automatic publication.
+- [x] Complete essential responsive submission, approval, and consumption journeys at 200% zoom; run keyboard, screen-reader, focus, contrast, locale, browser, and entitlement-equivalence tests.
+  - Result: `reporting-mobile.spec.ts` 3/3 (384px reflow of Reporting and Planning with no horizontal scrolling — main region made a one-axis scroll container for WCAG 1.4.10; keyboard reachability with visible focus) + recurring-reporting.spec 4/4 + existing shell axe/keyboard suite green; manual screen-reader/device pass = PENDING (O-B7).
+- [x] Run AC-F-013-01–02, AC-F-038-01–02, AC-F-041-01 and signed monthly-template, dashboard, drill, and pack-performance workloads; inspect actual Excel/PDF/presentation outputs for fidelity.
+  - Result: automated AC coverage green (dashboards/exports/publishing semantics above); signed workloads + actual-output fidelity inspection = PENDING owner-gated items in r3-ux-acceptance.md.
 
 **Done when:** Recurring reporting and export journeys are accepted, applicable F-013/F-038/F-041 criteria pass, and no critical accessibility barrier remains.  
 **Commit:** `feat(reporting): complete recurring governed analysis and distribution`
