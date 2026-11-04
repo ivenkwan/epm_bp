@@ -83,3 +83,26 @@ this synthetic set:
 
 Both rows assert the *detector*, not balanced data: planning model imbalances must open cases,
 never silently restate.
+
+## 8. Integrated statements (rule `icstm-1.0.0`, scale 2, HALF_UP)
+
+Inputs (`planning/integrated-statement-inputs.csv`, ENT-101 / 2027-P01): revenue.domestic
+`1000.00`, revenue.export `500.00`, opcost.salaries `400.00`, opcost.other `100.00`, capex
+`300.00`, depreciation `50.00`, opening.cash `2000.00`, opening.equity `2000.00`.
+
+Hand calculations:
+
+- revenue_total = 1000.00 + 500.00 = `1500.00`
+- opex_total = 400.00 + 100.00 = `500.00`
+- ebit = 1500.00 − 500.00 = `1000.00`
+- tax = 1000.00 × 0.25 = `250.00` (only on positive ebit)
+- net_income = 1000.00 − 250.00 = `750.00`
+- cash_flow = 750.00 + 50.00 − 300.00 = `500.00`
+- closing_cash = 2000.00 + 500.00 = `2500.00` (cash-to-cash-flow linkage)
+- assets = 2500.00 + 300.00 − 50.00 = `2750.00`
+- equity = 2000.00 + 750.00 = `2750.00`
+- balance_difference = 2750.00 − 2750.00 = `0.00` ✔ exact integrity
+
+Every row is reproduced by `IntegratedStatementService` (Task 42) — the calculator must
+match these figures exactly, decimal-string end-to-end. Zero is a legitimate input
+(`liabilities_total` is a true `0.00`); a null required input is an error, never zero.

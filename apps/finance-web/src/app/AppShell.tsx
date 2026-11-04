@@ -15,6 +15,11 @@ import {
   PLAN_VERSIONS,
   PlanVersionsPanel,
 } from '../features/plan-versions/PlanVersionsPanel';
+import {
+  BALANCE_CHECKS,
+  PlanningModelPanel,
+  STATEMENT_ROWS,
+} from '../features/planning-model/PlanningModelPanel';
 import { ErrorBanner } from '../components/ErrorBanner';
 
 /**
@@ -111,6 +116,7 @@ export function AppShell(): ReactNode {
             </p>
             <PlanningSetupPanel rows={TRANSLATION_ROWS} />
             <PlanVersionsPanel versions={PLAN_VERSIONS} />
+            <PlanningModelPanel statementRows={STATEMENT_ROWS} balanceChecks={BALANCE_CHECKS} />
           </section>
         ) : (
           <section aria-labelledby="reports-heading">

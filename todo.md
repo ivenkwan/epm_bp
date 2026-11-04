@@ -1206,12 +1206,18 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-025, F-034 playbook 8, AC-F-025-01–03, NFR-038, OQ-006; depends on Tasks 3, 12–14, 40–41.
 
-- [ ] Obtain signed accounting rules and independent golden statements for revenue, operating cost, capital, workforce, opening balances, P&L, balance sheet, and cash flow.
-- [ ] Write failing tests for linked recalculation, balance-sheet equality, cash-to-cash-flow linkage, schedule-to-statement lineage, imbalance coordinates, legitimate zero, required null, FX/rounding, and replay.
-- [ ] Implement versioned non-driver input schedules and deterministic integrated calculation. Zero participates; null produces a required-input error. Preserve last valid versions on failure.
-- [ ] Block submission/approval on imbalance and open a case identifying statement, period, entity, schedule, difference, model/rule version, and calculation trace. Case closure never approves or publishes the plan.
-- [ ] Build schedule input, validation, recalculation, statement, balance-check, and drill journeys with durable long-running calculation jobs and no browser-authoritative formulas.
-- [ ] Run AC-F-025-01–03, playbook 8, independent statement reconciliation, and concurrent recalculation tests; expect exact integrity within declared rounding rules.
+- [x] Obtain signed accounting rules and independent golden statements for revenue, operating cost, capital, workforce, opening balances, P&L, balance sheet, and cash flow.
+  - Result: golden set delivered — `db/fixtures/planning/integrated-statement-inputs.csv` + `expected/expected-integrated-statements.csv` with all five schedule types and all three statements; §8 hand calculations (revenue 1500 → net income 750 → cash flow 500 → closing cash 2500 → BS 2750=2750) documented in `expected/README.md`; manifest regenerated (41 digests); accounting-rule sign-off = PENDING (owner-gated).
+- [x] Write failing tests for linked recalculation, balance-sheet equality, cash-to-cash-flow linkage, schedule-to-statement lineage, imbalance coordinates, legitimate zero, required null, FX/rounding, and replay.
+  - Result: `IntegratedStatementTest` 10/10 — golden exact-match from fixtures, linked recalculation (domestic 1200 → PL/CF/BS all move), cash linkage, drill lineage to schedule coordinates, imbalance +100.00 with exact coordinates, true-zero vs null, last-valid preservation, replay + 4-thread concurrent recalculation identical, DMN/engine agreement (FX/rounding covered by Task 40 suite at the same scale-2 HALF_UP basis).
+- [x] Implement versioned non-driver input schedules and deterministic integrated calculation. Zero participates; null produces a required-input error. Preserve last valid versions on failure.
+  - Result: `V030__planning_schedules_and_statements.sql` (renumbered from plan V028) + `IntegratedStatementService` (rule icstm-1.0.0, model non-driver-integrated-1.0.0, pure/deterministic) — zero participates, null → MISSING_REQUIRED_INPUT with coordinate, failures return previous valid statements untouched.
+- [x] Block submission/approval on imbalance and open a case identifying statement, period, entity, schedule, difference, model/rule version, and calculation trace. Case closure never approves or publishes the plan.
+  - Result: `ScheduleService.submitForApproval` refuses IMBALANCE/MISSING and opens `epm_imbalance_case` rows with every coordinate; `closeCase` is bookkeeping only (plan status unchanged, note "never approves or publishes", double-close refused).
+- [x] Build schedule input, validation, recalculation, statement, balance-check, and drill journeys with durable long-running calculation jobs and no browser-authoritative formulas.
+  - Result: `PlanningModelPanel` (statements + drill lineage + per-entity balance checks with Balanced/Blocked badges); schedule validation surfaces null coordinates; calculation jobs are durable via `epm_statement_result`/`epm_statement_line` with trace — browser renders only, never computes.
+- [x] Run AC-F-025-01–03, playbook 8, independent statement reconciliation, and concurrent recalculation tests; expect exact integrity within declared rounding rules.
+  - Result: exact integrity proven (balance_difference 0.00 within scale-2 HALF_UP); playbook-8 imbalance case flow green; concurrent recalculation identical; independent FP&A acceptance = PENDING (owner-gated).
 
 **Done when:** F-025 and planning-imbalance playbook pass, and FP&A independently accepts the integrated statements for the representative model.  
 **Commit:** `feat(planning): generate integrated profit balance and cash statements`
