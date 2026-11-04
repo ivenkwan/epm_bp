@@ -42,5 +42,17 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <!-- Task 47: dashboard/drill load shape. -->
+    <dependency>
+      <groupId>dev.epm</groupId>
+      <artifactId>finance-reporting</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>io.quarkus</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
   </dependencies>
 </project>

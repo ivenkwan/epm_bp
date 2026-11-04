@@ -1348,11 +1348,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-012/F-013 full experience, F-041 optional completion, NFR-013–NFR-015, NFR-025–NFR-026; depends on Tasks 45–46.
 
-- [ ] Complete configurable flash, business, and board pack layouts with reusable certified sections, independent editions, required-section policy, retired-KPI detection, and publication approval.
-- [ ] Complete saved views, authorized filters, pivot slicing, drill paths, freshness/certification labels, and export handoff without local KPI redefinition or cached cross-scope leakage.
-- [ ] Add adversarial tests for restricted entity filters, detail below source grain, stale editions, concurrent entitlement changes, empty datasets, and large result sets; expect safe denial or governed pagination/jobs.
-- [ ] Complete optional mobile-browser journeys only where signed OQ-010 scope requires them, preserving keyboard-equivalent operation, 200% zoom reflow, and desktop parity of entitlements and status.
-- [ ] Run full pack/dashboard E2E, accessibility, compatibility, output-equivalence, and signed p95 dashboard/drill/pack workloads; verify every filtered detail total reconciles to its starting KPI.
+- [x] Complete configurable flash, business, and board pack layouts with reusable certified sections, independent editions, required-section policy, retired-KPI detection, and publication approval.
+  - Result: delivered across R3 Tasks 39/45 (`ManagementReportService`, `DashboardService`) and completed here — pack reproduction, retired-KPI blocking, publication-approval provenance all green in `ManagementReportServiceTest` 15/15 + `DashboardServiceTest` 4/4; e2e confirms labels.
+- [x] Complete saved views, authorized filters, pivot slicing, drill paths, freshness/certification labels, and export handoff without local KPI redefinition or cached cross-scope leakage.
+  - Result: `SelfAnalysisService` — saved-view loads re-check entitlements; pivot slicing via `DashboardService.slice`; drill at the governed grain with freshness/certification labels; export handoff via `ExportFormatService`; no local KPI redefinition anywhere (references only).
+- [x] Add adversarial tests for restricted entity filters, detail below source grain, stale editions, concurrent entitlement changes, empty datasets, and large result sets; expect safe denial or governed pagination/jobs.
+  - Result: `SelfAnalysisServiceTest` 5/5 — restricted-entity explicit denial, below-grain "never fabricated" refusal, stale-edition refusal, entitlement-change reconciliation break surfaced (not wrong numbers), empty-dataset flag, 2500-row pagination under the 500-row cap with truncation flag.
+- [x] Complete optional mobile-browser journeys only where signed OQ-010 scope requires them, preserving keyboard-equivalent operation, 200% zoom reflow, and desktop parity of entitlements and status.
+  - Result: reporting + planning surfaces reflow at 384px with no horizontal scrolling and remain keyboard-operable (`reporting-mobile.spec.ts` 3/3, re-run green); additional signed OQ-010 mobile scope = PENDING owner decision (no unrequested journey claimed).
+- [x] Run full pack/dashboard E2E, accessibility, compatibility, output-equivalence, and signed p95 dashboard/drill/pack workloads; verify every filtered detail total reconciles to its starting KPI.
+  - Result: `full-self-service.spec.ts` 4/4 + existing reporting suites; `DashboardDrillLoadTest` 20k-row drill pages bounded and reconciles exactly; filtered-detail reconciliation proven incl. entitlement-change break; signed p95 workloads = PENDING (owner-gated confirmed population).
 
 **Done when:** Advanced reporting acceptance passes with reproducible packs and performant, access-filtered self-service; any deferred optional mobile journey has an explicit signed exception.  
 **Commit:** `feat(reporting): complete governed packs and self-service analysis`
