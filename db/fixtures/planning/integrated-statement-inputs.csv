@@ -1,0 +1,10 @@
+schedule_type,entity_id,period,line_key,cell_value
+REVENUE,ENT-101,2027-P01,revenue.domestic,1000.00
+REVENUE,ENT-101,2027-P01,revenue.export,500.00
+OPERATING_COST,ENT-101,2027-P01,opcost.salaries,400.00
+OPERATING_COST,ENT-101,2027-P01,opcost.other,100.00
+CAPITAL,ENT-101,2027-P01,capex,300.00
+CAPITAL,ENT-101,2027-P01,depreciation,50.00
+OPENING_BALANCE,ENT-101,2027-P01,opening.cash,2000.00
+OPENING_BALANCE,ENT-101,2027-P01,opening.equity,2000.00
+WORKFORCE,ENT-101,2027-P01,workforce.fte,10

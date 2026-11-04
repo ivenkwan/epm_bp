@@ -19,6 +19,7 @@ case "${RELEASE}" in
   R0) PACK="docs/operations/r0-evidence-pack.md" ;;
   R1) PACK="docs/operations/r1-evidence-pack.md" ;;
   R2) PACK="docs/operations/r2-evidence-pack.md" ;;
+  R3) PACK="docs/operations/r3-evidence-pack.md" ;;
   *) echo "unknown release ${RELEASE}" >&2; exit 2 ;;
 esac
 
@@ -48,6 +49,20 @@ for task in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; do
 done
 if grep -q '| PENDING | — |' "${STATUS}"; then
   fail "build status still contains PENDING rows"
+fi
+
+# 5b. R3 additionally requires its own build status for Tasks 39-46 with no PENDING rows.
+if [ "${RELEASE}" = "R3" ]; then
+  R3_STATUS="docs/operations/r3-build-status.md"
+  [ -f "${R3_STATUS}" ] || fail "R3 build status missing"
+  for task in 39 40 41 42 43 44 45 46; do
+    grep -qE "^\| ${task} \|" "${R3_STATUS}" || fail "R3 build status row missing for task ${task}"
+  done
+  if grep -q '| PENDING | — |' "${R3_STATUS}"; then
+    fail "R3 build status still contains PENDING rows"
+  fi
+  ./scripts/operations/run-planning-migration.sh --verify >/dev/null \
+    || fail "planning migration gate failed"
 fi
 
 # 6. Sign-off block present and unsigned rows reported.

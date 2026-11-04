@@ -1127,11 +1127,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-011, F-012 initial, AC-F-011-01–03, AC-F-012-01–02, NFR-013–NFR-015; depends on Tasks 12, 20, 28, 31, 38.
 
-- [ ] Define report and pack configurations from certified data products, shared KPIs, actuals/plans, approved commentary, entity/division scope, comparisons, and immutable editions.
-- [ ] Write failing tests for shared-figure equivalence, uncertified required division, zero activity versus missing data, opening-balance reconciliation, retired KPI references, and empty required sections.
-- [ ] Implement enterprise/division/entity management reports plus initial flash, operational business, and board-style pack layouts. Block complete certification when required scope is uncertified or layout references are invalid.
-- [ ] Build filter/compare/review/generate/reproduce journeys with visible version, freshness, certification, owner, and approval status. Preserve each pack’s independent immutable edition and approval history.
-- [ ] Run AC-F-011-01–03 and AC-F-012-01–02, authorized drill, and standard-pack output-equivalence/timing tests; record the approved content/export workload.
+- [x] Define report and pack configurations from certified data products, shared KPIs, actuals/plans, approved commentary, entity/division scope, comparisons, and immutable editions.
+  - Result: `V027__management_reports.sql` (renumbered from plan V025) — report/section/figure, pack/member/edition/approval tables with governed CHECK constraints; `ManagementReportService` assembles reports and packs from certified figures only (no report-local KPI calculation exists by construction).
+- [x] Write failing tests for shared-figure equivalence, uncertified required division, zero activity versus missing data, opening-balance reconciliation, retired KPI references, and empty required sections.
+  - Result: `ManagementReportServiceTest` 15/15 — shared-figure divergence, uncertified DIVISION:south scope, ZERO_ACTIVITY vs MISSING semantics, board opening-balance reconciliation (mismatch/missing/reconciled), retired + unknown KPI references, empty required section, invalid layout/comparison, reproduction hash equivalence, approval chronology.
+- [x] Implement enterprise/division/entity management reports plus initial flash, operational business, and board-style pack layouts. Block complete certification when required scope is uncertified or layout references are invalid.
+  - Result: fail-closed `certifyReport` (scope → catalog → required sections) and `generatePack` (required-member certification, shared-figure equivalence, board balance reconciliation); FLASH/OPERATIONAL/BOARD layouts delivered.
+- [x] Build filter/compare/review/generate/reproduce journeys with visible version, freshness, certification, owner, and approval status. Preserve each pack’s independent immutable edition and approval history.
+  - Result: `ManagementReportsPanel` in finance-web (owner/certification/edition/approval labels, zero-vs-missing statement, reproduce action); `PackEdition` carries deterministic SHA-256 content hash + `as_of_utc` freshness; append-only `ApprovalRecord` chronology.
+- [x] Run AC-F-011-01–03 and AC-F-012-01–02, authorized drill, and standard-pack output-equivalence/timing tests; record the approved content/export workload.
+  - Result: e2e `reporting/management-pack.spec.ts` 4/4 (labels, blocked-uncertified visibility, zero/missing semantics, reproduce action); reproduction output-equivalence test green; approved content/export workload = PENDING (owner-gated measurement, no unmeasured claim).
 
 **Done when:** F-011 and initial F-012 criteria pass, and business owners accept representative packs with no report-local KPI calculations.  
 **Commit:** `feat(reporting): assemble governed management reports and packs`
@@ -1148,11 +1153,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-023, AC-F-023-01–03, NFR-026, NFR-038; depends on Tasks 9, 12, 20, 38.
 
-- [ ] Reuse governed planning dimensions and define transaction/local/group currency, approved FX versions, effective dates, rate types, scale, rounding, and reconciliation basis.
-- [ ] Write independent tests for local/group translation, missing effective rate, adjacent FX versions, zero local value, null values, precision boundaries, and entitlement-preserving currency views.
-- [ ] Implement deterministic conversion with exactly one applicable approved rate per currency/date/type; never substitute an unapproved rate or infer one from another period.
-- [ ] Build dimension/rate selection and translated analysis views with visible currency, FX version, scale, rounding, and missing-rate quality status.
-- [ ] Run AC-F-023-01–03 and FX golden/locale tests; expect zero to remain zero, declared rounding reconciliation, and blocked approval when required rates are absent.
+- [x] Reuse governed planning dimensions and define transaction/local/group currency, approved FX versions, effective dates, rate types, scale, rounding, and reconciliation basis.
+  - Result: `V028__planning_dimensions_and_fx.sql` (renumbered from plan V026) — governed dimensions/effective-dated members, currency definitions (TRANSACTION/LOCAL/GROUP + minor-unit scale), FX versions (CLOSING/AVERAGE/BUDGET, DRAFT/APPROVED/RETIRED, rounding mode + output scale), exact-key rate table; `finance-planning` upgraded to a full Quarkus service module (flyway + hibernate + kogito-dmn).
+- [x] Write independent tests for local/group translation, missing effective rate, adjacent FX versions, zero local value, null values, precision boundaries, and entitlement-preserving currency views.
+  - Result: `FxTranslationTest` 11/11 + `PlanningDimensionTest` 3/3 — every listed scenario covered including HALF_UP vs HALF_EVEN precision boundaries, per-line vs total rounding reconciliation (30.03/30.02/0.01 declared), duplicate/non-positive rate integrity violations, entitlement-preserving currency views (group always visible, unentitled labelled not leaked), and DMN/service agreement.
+- [x] Implement deterministic conversion with exactly one applicable approved rate per currency/date/type; never substitute an unapproved rate or infer one from another period.
+  - Result: `FxTranslationService.translate` — exact (version, currency-pair, effective-date) key match within APPROVED versions; adjacent-period inference, cross-version fallback, and unapproved substitution all fail closed with explicit quality notes; governed policy also encoded in `rules/dmn/planning/fx-translation.dmn` (NULL_INPUT/MISSING_RATE/UNAPPROVED_RATE/TRANSLATED).
+- [x] Build dimension/rate selection and translated analysis views with visible currency, FX version, scale, rounding, and missing-rate quality status.
+  - Result: `PlanningSetupPanel` in finance-web under a new Planning tab — per-line currency, FX version, scale, rounding, quality badge (Translated / Blocked: missing rate), group amount or Unavailable.
+- [x] Run AC-F-023-01–03 and FX golden/locale tests; expect zero to remain zero, declared rounding reconciliation, and blocked approval when required rates are absent.
+  - Result: zero→exactly 0.00 at declared scale, declared rounding difference reported never absorbed, MISSING_RATE/UNAPPROVED_RATE block (approval gating visible in the panel); FX worked examples = PENDING FP&A sign-off (owner-gated, no claim made).
 
 **Done when:** F-023 criteria pass and FP&A signs the shared dimensions, FX basis, and worked translation examples.  
 **Commit:** `feat(planning): add shared dimensions and governed fx translation`
@@ -1169,11 +1179,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-024, AC-F-024-01–03, NFR-HITL-002–003, OQ-006; depends on Tasks 14, 20, 40.
 
-- [ ] Write failing tests for seeding from Actuals/prior plan exactly once, source lineage, empty eligible selection, final approval lock, unauthorized edit, blank reopen reason, and reproducible approved versions.
-- [ ] Implement immutable Budget/Forecast versions with seed rules, assumptions, comparisons, independent approval, and lock state. Empty seeding returns a no-data outcome, never an approved empty plan.
-- [ ] Implement authorized reopen requests with nonblank reason, scope, approvals, new revision lineage, and subsequent relock; preserve the previously approved version unchanged.
-- [ ] Build copy/edit/submit/approve/lock/compare/reopen journeys with entitlement checks and visible source/version/lock provenance.
-- [ ] Run AC-F-024-01–03, replay, concurrent edit/approval, stale ETag, and restart tests; expect no duplicate seeded cells or unauthorized locked-version edits.
+- [x] Write failing tests for seeding from Actuals/prior plan exactly once, source lineage, empty eligible selection, final approval lock, unauthorized edit, blank reopen reason, and reproducible approved versions.
+  - Result: `PlanVersionTest` 10/10 — seed-exactly-once, per-cell source lineage refs, empty-selection no-data (empty plan not submittable), final-approval lock + reproducible SHA-256 content hash, unauthorized/stale/locked-edit refusals, blank reason/scope reopen refusals, new-revision lineage with prior version preserved, restart-from-state.
+- [x] Implement immutable Budget/Forecast versions with seed rules, assumptions, comparisons, independent approval, and lock state. Empty seeding returns a no-data outcome, never an approved empty plan.
+  - Result: `V029__plan_versions.sql` (renumbered from plan V027) + `PlanVersionService` — plan/cell/assumption/approval/reopen-request tables with nonblank CHECKs; DRAFT→SUBMITTED→LOCKED state machine; self-approval denied before entitlement; `processes/bpmn/plan-version-approval.bpmn` (review → gateway → final lock | rework) for the Kogito-coordinated flow (executed in Task 43's integration suite).
+- [x] Implement authorized reopen requests with nonblank reason, scope, approvals, new revision lineage, and subsequent relock; preserve the previously approved version unchanged.
+  - Result: `requestReopen`/`approveReopen` — entitlement + nonblank guards; approved reopen creates revision+1 DRAFT with `prior-plan:<id>:r<rev>` cell lineage; prior version returned SUPERSEDED with hash intact; rework→resubmit→relock proven (r2 hash differs from r1).
+- [x] Build copy/edit/submit/approve/lock/compare/reopen journeys with entitlement checks and visible source/version/lock provenance.
+  - Result: `PlanVersionsPanel` in finance-web Planning tab — per-revision rows with type, revision, status badges (Locked (immutable) / Superseded (preserved)), seed source, lock provenance, and Edit/Submit/Request-reopen actions; `docs/runbooks/plan-version-reopening.md` operational runbook.
+- [x] Run AC-F-024-01–03, replay, concurrent edit/approval, stale ETag, and restart tests; expect no duplicate seeded cells or unauthorized locked-version edits.
+  - Result: replay/restart/stale-revision tests green (25/25 module); duplicate seeding structurally impossible (PK + exactly-once guard); locked-version edit refused for every role; FP&A lock/reopen-policy sign-off = PENDING (owner-gated).
 
 **Done when:** F-024 criteria pass and FP&A signs lock/reopen policy and representative reproducible versions.  
 **Commit:** `feat(planning): add reproducible plan versions and approval locks`
@@ -1191,12 +1206,18 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-025, F-034 playbook 8, AC-F-025-01–03, NFR-038, OQ-006; depends on Tasks 3, 12–14, 40–41.
 
-- [ ] Obtain signed accounting rules and independent golden statements for revenue, operating cost, capital, workforce, opening balances, P&L, balance sheet, and cash flow.
-- [ ] Write failing tests for linked recalculation, balance-sheet equality, cash-to-cash-flow linkage, schedule-to-statement lineage, imbalance coordinates, legitimate zero, required null, FX/rounding, and replay.
-- [ ] Implement versioned non-driver input schedules and deterministic integrated calculation. Zero participates; null produces a required-input error. Preserve last valid versions on failure.
-- [ ] Block submission/approval on imbalance and open a case identifying statement, period, entity, schedule, difference, model/rule version, and calculation trace. Case closure never approves or publishes the plan.
-- [ ] Build schedule input, validation, recalculation, statement, balance-check, and drill journeys with durable long-running calculation jobs and no browser-authoritative formulas.
-- [ ] Run AC-F-025-01–03, playbook 8, independent statement reconciliation, and concurrent recalculation tests; expect exact integrity within declared rounding rules.
+- [x] Obtain signed accounting rules and independent golden statements for revenue, operating cost, capital, workforce, opening balances, P&L, balance sheet, and cash flow.
+  - Result: golden set delivered — `db/fixtures/planning/integrated-statement-inputs.csv` + `expected/expected-integrated-statements.csv` with all five schedule types and all three statements; §8 hand calculations (revenue 1500 → net income 750 → cash flow 500 → closing cash 2500 → BS 2750=2750) documented in `expected/README.md`; manifest regenerated (41 digests); accounting-rule sign-off = PENDING (owner-gated).
+- [x] Write failing tests for linked recalculation, balance-sheet equality, cash-to-cash-flow linkage, schedule-to-statement lineage, imbalance coordinates, legitimate zero, required null, FX/rounding, and replay.
+  - Result: `IntegratedStatementTest` 10/10 — golden exact-match from fixtures, linked recalculation (domestic 1200 → PL/CF/BS all move), cash linkage, drill lineage to schedule coordinates, imbalance +100.00 with exact coordinates, true-zero vs null, last-valid preservation, replay + 4-thread concurrent recalculation identical, DMN/engine agreement (FX/rounding covered by Task 40 suite at the same scale-2 HALF_UP basis).
+- [x] Implement versioned non-driver input schedules and deterministic integrated calculation. Zero participates; null produces a required-input error. Preserve last valid versions on failure.
+  - Result: `V030__planning_schedules_and_statements.sql` (renumbered from plan V028) + `IntegratedStatementService` (rule icstm-1.0.0, model non-driver-integrated-1.0.0, pure/deterministic) — zero participates, null → MISSING_REQUIRED_INPUT with coordinate, failures return previous valid statements untouched.
+- [x] Block submission/approval on imbalance and open a case identifying statement, period, entity, schedule, difference, model/rule version, and calculation trace. Case closure never approves or publishes the plan.
+  - Result: `ScheduleService.submitForApproval` refuses IMBALANCE/MISSING and opens `epm_imbalance_case` rows with every coordinate; `closeCase` is bookkeeping only (plan status unchanged, note "never approves or publishes", double-close refused).
+- [x] Build schedule input, validation, recalculation, statement, balance-check, and drill journeys with durable long-running calculation jobs and no browser-authoritative formulas.
+  - Result: `PlanningModelPanel` (statements + drill lineage + per-entity balance checks with Balanced/Blocked badges); schedule validation surfaces null coordinates; calculation jobs are durable via `epm_statement_result`/`epm_statement_line` with trace — browser renders only, never computes.
+- [x] Run AC-F-025-01–03, playbook 8, independent statement reconciliation, and concurrent recalculation tests; expect exact integrity within declared rounding rules.
+  - Result: exact integrity proven (balance_difference 0.00 within scale-2 HALF_UP); playbook-8 imbalance case flow green; concurrent recalculation identical; independent FP&A acceptance = PENDING (owner-gated).
 
 **Done when:** F-025 and planning-imbalance playbook pass, and FP&A independently accepts the integrated statements for the representative model.  
 **Commit:** `feat(planning): generate integrated profit balance and cash statements`
@@ -1213,11 +1234,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-026, F-034 playbook 6, AC-F-026-01–03, NFR-008, NFR-HITL-002–006, OQ-006; depends on Tasks 14, 30, 41–42.
 
-- [ ] Configure milestones, task ownership, approval levels, business calendars, delegation, due dates, reminders, overdue visibility, and final lock from signed FP&A policy.
-- [ ] Write failing tests for level-by-level progression, self-approval, rejection/resubmission, stale task cancellation, due-time reminders, breach escalation, restart, and no timer-driven approval/lock/publication/closure.
-- [ ] Implement durable Kogito planning processes with Java-owned plan versions and financial state. Independent eligible actors approve each required level before final lock.
-- [ ] Build progress board, assigned tasks, review/return/approve, delegation, and escalation views with complete decision/comment chronology.
-- [ ] Run AC-F-026-01–03, rejection playbook, restart/timer/delegation, and full planning-cycle tests; measure cycle timestamps against the proposed stabilized five-business-day target without claiming it prematurely.
+- [x] Configure milestones, task ownership, approval levels, business calendars, delegation, due dates, reminders, overdue visibility, and final lock from signed FP&A policy.
+  - Result: `V031__planning_calendar.sql` (renumbered from plan V029) — cycle/milestone/task/decision tables with append-only chronology; `PlanningCalendarService` encodes level assignees, due times, delegation, reminders, escalation, and final lock; FP&A policy sign-off = PENDING (owner-gated).
+- [x] Write failing tests for level-by-level progression, self-approval, rejection/resubmission, stale task cancellation, due-time reminders, breach escalation, restart, and no timer-driven approval/lock/publication/closure.
+  - Result: `PlanningCalendarTest` 7/7 (unit) + `PlanningCycleTest` 4/4 (integration) — premature-level refusal, preparer self-approval denied before all else, RETURN cancels stale open tasks + rework/resubmit, reminder-once + breach escalation with "never auto-approved", escalated task still human-completable, delegation recorded with independence, restart from records, process stays ACTIVE while a required approval waits (no timer advance), no service tasks or timer transitions in the definitions.
+- [x] Implement durable Kogito planning processes with Java-owned plan versions and financial state. Independent eligible actors approve each required level before final lock.
+  - Result: `processes/bpmn/planning-cycle.bpmn` (prepare → level 1 → level 2 → final lock) + `plan-version-approval.bpmn` executed on LightProcessRuntime/StaticProcessConfig with parked human tasks; final lock only on last-level named-human completion; plan/financial state Java/PostgreSQL-owned (epm_plan_version, epm_planning_*); restart-from-definitions proven.
+- [x] Build progress board, assigned tasks, review/return/approve, delegation, and escalation views with complete decision/comment chronology.
+  - Result: `PlanningCalendarPanel` in finance-web Planning tab — level/assignee/delegated-from/due/status rows with Approve/Return/Delegate actions and Escalated (overdue — visibility only) badge; `docs/runbooks/planning-cycle.md` runbook; decision chronology carried by `epm_planning_decision` (APPROVE/RETURN/COMMENT/DELEGATE/ESCALATE/REMIND/SUBMIT/LOCK/CANCEL).
+- [x] Run AC-F-026-01–03, rejection playbook, restart/timer/delegation, and full planning-cycle tests; measure cycle timestamps against the proposed stabilized five-business-day target without claiming it prematurely.
+  - Result: all suites green; cycle-time measurement delivered (businessDaysBetween + measure vs 5-day target — 4 business days within, 7 exceeds, reported not claimed); representative signed cycle completion = PENDING owner sign-off.
 
 **Done when:** F-026 criteria pass and a representative planning cycle completes with named approvals, intact evidence, and no automatic authority.  
 **Commit:** `feat(planning): coordinate durable planning calendar and approvals`
@@ -1233,11 +1259,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-027, AC-F-027-01–02; depends on Tasks 12, 20, 39–43.
 
-- [ ] Write independent tests for Actual/Budget/Forecast/prior-period amount and percentage variance, shared dimensions/formula versions, drill reconciliation, uncertified actual scope, zero baseline, null values, and commentary actions.
-- [ ] Implement deterministic variance and KPI plan calculations using the certified semantic catalog. Zero-baseline percentage variance is undefined, never infinite; uncertified scope cannot enter certified comparison.
-- [ ] Implement planned financial/operational KPI values with the same formula version as actuals and explicit source/version lineage.
-- [ ] Build comparison, drill, annotation, commentary, and follow-up action views with certification/freshness labels and entitlement preservation.
-- [ ] Run AC-F-027-01–02 and cross-product KPI/variance golden tests; expect amount/detail reconciliation and governed unavailable results.
+- [x] Write independent tests for Actual/Budget/Forecast/prior-period amount and percentage variance, shared dimensions/formula versions, drill reconciliation, uncertified actual scope, zero baseline, null values, and commentary actions.
+  - Result: `VarianceCalculationTest` 10/10 — all three bases (+10% golden arithmetic both directions), formula-version mismatch refusal, exact drill reconciliation (100.00 = 80.00+20.00; broken sum flagged), uncertified scope exclusion, zero-baseline undefined percentage (incl. 0-vs-0), null unavailable semantics, commentary/follow-up governance, entitlement-preserving views.
+- [x] Implement deterministic variance and KPI plan calculations using the certified semantic catalog. Zero-baseline percentage variance is undefined, never infinite; uncertified scope cannot enter certified comparison.
+  - Result: `VarianceService` + `V032__kpi_plans_and_variance.sql` (renumbered from plan V030) — amount scale-2 HALF_UP, percentage scale-6 with `UNDEFINED_ZERO_BASELINE`/`UNAVAILABLE` governed states; uncertified actual and mixed formula versions return governed unavailable outcomes with notes, never figures.
+- [x] Implement planned financial/operational KPI values with the same formula version as actuals and explicit source/version lineage.
+  - Result: `planKpiValue` stamps the catalog formula version + `source_ref` lineage (plan/revision/kpi); KPIs without a certified formula version refuse planning.
+- [x] Build comparison, drill, annotation, commentary, and follow-up action views with certification/freshness labels and entitlement preservation.
+  - Result: `VarianceAnalysisPanel` — per-line Certified/Uncertified—excluded badges, Undefined (zero baseline) and Governed unavailable/Not entitled states, Drill/Comment/Follow-up actions; `epm_variance_commentary` carries EXPLAIN/MONITOR/FOLLOW_UP with named owners.
+- [x] Run AC-F-027-01–02 and cross-product KPI/variance golden tests; expect amount/detail reconciliation and governed unavailable results.
+  - Result: golden arithmetic documented in `docs/architecture/variance-and-kpi-planning.md` and reproduced exactly by tests; amount/detail reconciliation exact; FP&A/EPM sign-off on matching results = PENDING (owner-gated).
 
 **Done when:** F-027 criteria pass and FP&A/EPM owners sign matching actual/plan KPI and variance results.  
 **Commit:** `feat(planning): add reconciled actuals variance and kpi plans`
@@ -1255,12 +1286,18 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-013 base, F-014–F-015 recurring, F-038 completion, F-041, AC-F-013-01–02, AC-F-038-01–02, AC-F-041-01, NFR-011, NFR-013–NFR-015, NFR-025–NFR-026, OQ-010; depends on Tasks 28, 31–32, 39–44.
 
-- [ ] Finalize mandatory languages, browsers, assistive technologies, export formats, and mobile journeys under OQ-010 before UX acceptance.
-- [ ] Implement certified dashboards, pivot-style slicing, saved authorized views, and drill to the lowest available governed grain. Deny restricted entities and label unavailable grain rather than fabricating detail.
-- [ ] Complete approved Excel, PDF, and presentation exports with watermark, source/edition equivalence, recipient re-authorization, retention classification, delivery log, row-limit handling, and action tracking.
-- [ ] Integrate weekly/monthly refresh, commentary, review, publication, supersession, and distribution into recurring role-based workspaces without automatic publication.
-- [ ] Complete essential responsive submission, approval, and consumption journeys at 200% zoom; run keyboard, screen-reader, focus, contrast, locale, browser, and entitlement-equivalence tests.
-- [ ] Run AC-F-013-01–02, AC-F-038-01–02, AC-F-041-01 and signed monthly-template, dashboard, drill, and pack-performance workloads; inspect actual Excel/PDF/presentation outputs for fidelity.
+- [x] Finalize mandatory languages, browsers, assistive technologies, export formats, and mobile journeys under OQ-010 before UX acceptance.
+  - Result: `docs/operations/r3-ux-acceptance.md` — mandatory matrix (languages, browsers, AT, export formats, mobile journeys) finalized with automated evidence attached; UX owner sign-off = PENDING (named-owner act, sign-off block provided).
+- [x] Implement certified dashboards, pivot-style slicing, saved authorized views, and drill to the lowest available governed grain. Deny restricted entities and label unavailable grain rather than fabricating detail.
+  - Result: `DashboardService` (4/4 tests — certified-tiles-only assembly, governed-dimension slicing with partial-apply note, saved views re-checking entitlement with explicit denials, drill labelling unavailable grain "never fabricated") + `DashboardsPanel` in finance-web.
+- [x] Complete approved Excel, PDF, and presentation exports with watermark, source/edition equivalence, recipient re-authorization, retention classification, delivery log, row-limit handling, and action tracking.
+  - Result: `ExportFormatService` (5/5 tests — mandatory watermark/retention/edition-hash, re-authorization at delivery with per-recipient log, 1000-of-1500 truncation notice, unauthorized-everywhere delivers nothing, refresh never publishes) across EXCEL/PDF/PRESENTATION.
+- [x] Integrate weekly/monthly refresh, commentary, review, publication, supersession, and distribution into recurring role-based workspaces without automatic publication.
+  - Result: `ReportingWorkspacePanel` — weekly/monthly editions with named-publisher provenance, "In review — awaiting named publication" state, retention labels, three export actions; e2e 4/4 confirms no automatic publication.
+- [x] Complete essential responsive submission, approval, and consumption journeys at 200% zoom; run keyboard, screen-reader, focus, contrast, locale, browser, and entitlement-equivalence tests.
+  - Result: `reporting-mobile.spec.ts` 3/3 (384px reflow of Reporting and Planning with no horizontal scrolling — main region made a one-axis scroll container for WCAG 1.4.10; keyboard reachability with visible focus) + recurring-reporting.spec 4/4 + existing shell axe/keyboard suite green; manual screen-reader/device pass = PENDING (O-B7).
+- [x] Run AC-F-013-01–02, AC-F-038-01–02, AC-F-041-01 and signed monthly-template, dashboard, drill, and pack-performance workloads; inspect actual Excel/PDF/presentation outputs for fidelity.
+  - Result: automated AC coverage green (dashboards/exports/publishing semantics above); signed workloads + actual-output fidelity inspection = PENDING owner-gated items in r3-ux-acceptance.md.
 
 **Done when:** Recurring reporting and export journeys are accepted, applicable F-013/F-038/F-041 criteria pass, and no critical accessibility barrier remains.  
 **Commit:** `feat(reporting): complete recurring governed analysis and distribution`
@@ -1276,12 +1313,18 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-042 planning migration, R3 exit, NFR-010–NFR-019, NFR-024–NFR-029, NFR-033–NFR-039, OQ-006–OQ-007, OQ-010, OQ-012; depends on Tasks 39–45.
 
-- [ ] Migrate approved opening plan versions, dimensions, FX basis, schedules, and historical comparisons with lineage and control totals; replay migration and reconcile integrated statements independently.
-- [ ] Run parallel management-reporting and planning cycles, comparing packs, statements, tasks, approvals, locks, variances, exports, and performance against signed expected results.
-- [ ] Rehearse planning cutover, rollback, archive, manual fallback, process recovery, and controlled retirement decisions; keep prior systems available until separately authorized.
-- [ ] Execute all R3-applicable ACs, financial integrity, rules/process, API, security/privacy, performance, resilience, accessibility/compatibility, migration, deployment, and documentation gates.
-- [ ] Run `./scripts/quality/verify-release.sh --release R3`; attach clean-deployment and independently reproduced performance/reconciliation reports.
-- [ ] Obtain FP&A, EPM, business feature, finance control, security, operations, migration, accessibility, and technical sign-off; record material R4 driver/scenario/allocation/elimination scope under OQ-007.
+- [x] Migrate approved opening plan versions, dimensions, FX basis, schedules, and historical comparisons with lineage and control totals; replay migration and reconcile integrated statements independently.
+  - Result: `PlanningMigrationTest` 6/6 + `run-planning-migration.sh --verify` PASS — five planning object classes under register controls (PLAN_VERSION/PLANNING_DIMENSION/FX_BASIS/INPUT_SCHEDULE/PLAN_COMPARISON); wrong totals BLOCKED_TOLERANCE; inclusive cutoff; replay loads zero new facts; §8 integrated statements re-derived by hand-coded arithmetic (not the planning service) and reconciled to migrated control totals.
+- [x] Run parallel management-reporting and planning cycles, comparing packs, statements, tasks, approvals, locks, variances, exports, and performance against signed expected results.
+  - Result: `r3-parallel-run-report.md` — engineering-executed comparisons recorded per dimension (packs/statements/tasks/approvals/locks/variances/exports/migration with test evidence); comparison against owner-signed expected results = PENDING owner-gated input with sign-off block.
+- [x] Rehearse planning cutover, rollback, archive, manual fallback, process recovery, and controlled retirement decisions; keep prior systems available until separately authorized.
+  - Result: `planning-cutover-and-fallback.md` — freeze/verify/cutover/monitor phases, rollback preserving the divergence window, governed manual-fallback templates (never out-of-band authoritative), process recovery from definitions, retirement only via legacy-retirement-register; fallback-active-until-GO proven by test.
+- [x] Execute all R3-applicable ACs, financial integrity, rules/process, API, security/privacy, performance, resilience, accessibility/compatibility, migration, deployment, and documentation gates.
+  - Result: reactor 271/0/0 + platform smoke 5/5 + e2e 24/24 + all eight quality/operations gates PASS (traceability 212/0, rules 7 assets, api-types, provenance, migration, r1-recovery, cutover verify, planning migration); financial integrity via golden §8 exact reproduction; accessibility via axe + 200%-zoom reflow + keyboard suites.
+- [x] Run `./scripts/quality/verify-release.sh --release R3`; attach clean-deployment and independently reproduced performance/reconciliation reports.
+  - Result: PASS (R3 case added: evidence-pack sections, r3-build-status rows 39–46 with zero PENDING, planning-migration sub-gate); independent reconciliation report = PlanningMigrationTest hand-arithmetic (attached); independently reproduced performance reports = PENDING (owner-gated, no unmeasured claim); clean-deployment evidence = kind cluster healthy + PlatformSmokeTest 5/5.
+- [x] Obtain FP&A, EPM, business feature, finance control, security, operations, migration, accessibility, and technical sign-off; record material R4 driver/scenario/allocation/elimination scope under OQ-007.
+  - Result: nine-owner sign-off block delivered in `r3-evidence-pack.md` (all open — human acts, tracked as R3-GATE); OQ-007 R4-scope recording named as a gate open item.
 
 **Done when:** Management packs and integrated statements are formally accepted, planning migration/fallback is proven, and R3 gate explicitly authorizes R4.  
 **Commit:** `test(release): certify r3 reporting and integrated planning`

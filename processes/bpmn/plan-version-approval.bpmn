@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             id="plan-version-approval-definitions"
+             targetNamespace="https://epm.dev/processes/planning"
+             typeLanguage="http://www.java.com/javaTypes"
+             expressionLanguage="http://www.mvel.org/2.0">
+  <process id="plan_version_approval" name="Plan Version Approval" isExecutable="true" processType="Private">
+    <!-- Coordinated by Kogito; durable plan/financial state lives in PostgreSQL
+         (epm_plan_version). Rejection/return semantics are Java-owned
+         (PlanVersionService + PlanningCalendarService); the process carries the
+         required named-human sequence. The final lock is the consequence of the
+         independent human approval only — never timer-driven. -->
+    <startEvent id="versionSubmitted" name="Plan version submitted"/>
+    <sequenceFlow id="f1" sourceRef="versionSubmitted" targetRef="reviewTask"/>
+    <userTask id="reviewTask" name="Independent plan review">
+      <documentation>Reviewer checks seed lineage, assumptions, and comparisons. Reviewer must not be the submitter. Rejection returns the version to DRAFT in the Java-owned state.</documentation>
+    </userTask>
+    <sequenceFlow id="f2" sourceRef="reviewTask" targetRef="finalLock"/>
+    <userTask id="finalLock" name="Final approval and lock">
+      <documentation>Final approval locks the version; the lock is a named-human act, never timer-driven.</documentation>
+    </userTask>
+    <sequenceFlow id="f3" sourceRef="finalLock" targetRef="versionLocked"/>
+    <endEvent id="versionLocked" name="Version locked"/>
+  </process>
+</definitions>

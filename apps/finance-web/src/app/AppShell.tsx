@@ -3,6 +3,39 @@ import type { ReactNode } from 'react';
 import { SessionState, useSession } from '../app/session';
 import { SubmissionLookup } from '../app/SubmissionLookup';
 import { LiquidityContextPanel } from '../features/liquidity-context/LiquidityContextPanel';
+import {
+  MANAGEMENT_PACKS,
+  ManagementReportsPanel,
+} from '../features/management-reports/ManagementReportsPanel';
+import {
+  DASHBOARD_TILES,
+  DashboardsPanel,
+} from '../features/dashboards/DashboardsPanel';
+import {
+  WORKSPACE_EDITIONS,
+  ReportingWorkspacePanel,
+} from '../features/reporting-workspace/ReportingWorkspacePanel';
+import {
+  TRANSLATION_ROWS,
+  PlanningSetupPanel,
+} from '../features/planning-setup/PlanningSetupPanel';
+import {
+  PLAN_VERSIONS,
+  PlanVersionsPanel,
+} from '../features/plan-versions/PlanVersionsPanel';
+import {
+  BALANCE_CHECKS,
+  PlanningModelPanel,
+  STATEMENT_ROWS,
+} from '../features/planning-model/PlanningModelPanel';
+import {
+  CALENDAR_TASKS,
+  PlanningCalendarPanel,
+} from '../features/planning-calendar/PlanningCalendarPanel';
+import {
+  VARIANCE_ROWS,
+  VarianceAnalysisPanel,
+} from '../features/variance-analysis/VarianceAnalysisPanel';
 import { ErrorBanner } from '../components/ErrorBanner';
 
 /**
@@ -12,7 +45,7 @@ import { ErrorBanner } from '../components/ErrorBanner';
  */
 export function AppShell(): ReactNode {
   const session = useSession();
-  const [active, setActive] = useState<'submissions' | 'reports'>('submissions');
+  const [active, setActive] = useState<'submissions' | 'reports' | 'planning'>('submissions');
   const [error, setError] = useState<string | null>(null);
   const mainRef = useRef<HTMLElement | null>(null);
 
@@ -55,6 +88,18 @@ export function AppShell(): ReactNode {
                 Reports
               </button>
             </li>
+            <li>
+              <button
+                type="button"
+                aria-current={active === 'planning' ? 'page' : undefined}
+                className={active === 'planning' ? 'active' : undefined}
+                onClick={() => {
+                  setActive('planning');
+                }}
+              >
+                Planning
+              </button>
+            </li>
           </ul>
         </nav>
         <SessionBadge session={session} />
@@ -78,6 +123,19 @@ export function AppShell(): ReactNode {
         ) : null}
         {active === 'submissions' ? (
           <SubmissionLookup onError={setError} />
+        ) : active === 'planning' ? (
+          <section aria-labelledby="planning-heading">
+            <h2 id="planning-heading">Planning</h2>
+            <p>
+              Governed planning workspace: shared dimensions, FX basis, plan versions,
+              schedules, and approvals. The browser never owns rates, formulas, or locks.
+            </p>
+            <PlanningSetupPanel rows={TRANSLATION_ROWS} />
+            <PlanVersionsPanel versions={PLAN_VERSIONS} />
+            <PlanningModelPanel statementRows={STATEMENT_ROWS} balanceChecks={BALANCE_CHECKS} />
+            <PlanningCalendarPanel tasks={CALENDAR_TASKS} />
+            <VarianceAnalysisPanel rows={VARIANCE_ROWS} />
+          </section>
         ) : (
           <section aria-labelledby="reports-heading">
             <h2 id="reports-heading">Reports</h2>
@@ -87,6 +145,9 @@ export function AppShell(): ReactNode {
             </p>
             <StatusSlot label="Certification" value="Not yet available" />
             <StatusSlot label="Freshness" value="Not yet available" />
+            <ManagementReportsPanel packs={MANAGEMENT_PACKS} />
+            <DashboardsPanel tiles={DASHBOARD_TILES} />
+            <ReportingWorkspacePanel editions={WORKSPACE_EDITIONS} />
             <LiquidityContextPanel enabled={false} />
           </section>
         )}
