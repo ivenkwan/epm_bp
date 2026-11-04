@@ -52,6 +52,7 @@ import {
   PILOT_STATUS,
   AiCommentaryPanel,
 } from '../features/ai-commentary/AiCommentaryPanel';
+import { QA_ROUTE_STATE, KpiQaPanel } from '../features/kpi-qa/KpiQaPanel';
 import { ErrorBanner } from '../components/ErrorBanner';
 
 /**
@@ -155,6 +156,7 @@ export function AppShell(): ReactNode {
             <AllocationsPanel runs={ALLOCATION_RUNS} />
             <ManagementEliminationsPanel rows={ELIMINATIONS} />
             <AiCommentaryPanel status={PILOT_STATUS} />
+            <KpiQaPanel state={QA_ROUTE_STATE} />
           </section>
         ) : (
           <section aria-labelledby="reports-heading">

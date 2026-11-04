@@ -1515,11 +1515,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-032, AC-F-032-01, NFR-021, NFR-023, NFR-030–NFR-031, OQ-011; depends on Tasks 47, 51–52 pilot authorization.
 
-- [ ] Define allowlisted semantic tools for approved KPI lookup, period/version basis, variance, and evidence retrieval; expose no arbitrary SQL, Cypher, DRL, code execution, or unrestricted filters.
-- [ ] Write failing tests for current-value/basis answers, zero-denominator unavailable result, evidence links, safe refusal, uncertified data, cross-entity scope, prompt injection, and unsupported follow-up questions.
-- [ ] Implement Tier 2 bounded answering with access filtering before grounding and again on evidence-link retrieval. Return KPI/version/period basis and citations or a safe refusal, never invented values.
-- [ ] Build ask/inspect-evidence/feedback/escalate journeys with visible AI status and no automatic report, plan, certification, or publication changes.
-- [ ] Run AC-F-032-01 plus correctness, numeric fidelity, denied scope, unavailable result, injection, provenance, and kill-switch evaluations; require all release-set cases to pass before enablement.
+- [x] Define allowlisted semantic tools for approved KPI lookup, period/version basis, variance, and evidence retrieval; expose no arbitrary SQL, Cypher, DRL, code execution, or unrestricted filters.
+  - Result: `semantic/tools/SemanticTools` — enum-allowlisted KPI_LOOKUP/VARIANCE_LOOKUP/EVIDENCE_READ with fixed argument maps over certified facts; the surface cannot express a query, only a bounded lookup.
+- [x] Write failing tests for current-value/basis answers, zero-denominator unavailable result, evidence links, safe refusal, uncertified data, cross-entity scope, prompt injection, and unsupported follow-up questions.
+  - Result: `KpiQaTest` 6/6 — basis+citation answers, governed UNAVAILABLE (never 0.00), refusals for disabled route/uncertified/unknown/injection/cross-entity (both filter passes).
+- [x] Implement Tier 2 bounded answering with access filtering before grounding and again on evidence-link retrieval. Return KPI/version/period basis and citations or a safe refusal, never invented values.
+  - Result: `KpiQaService.ask` — pass-1 tool-layer scope check before grounding, pass-2 evidence-scope check for citations; every answer carries `basis kpi/period/version` + provenance; values only ever come from tool results.
+- [x] Build ask/inspect-evidence/feedback/escalate journeys with visible AI status and no automatic report, plan, certification, or publication changes.
+  - Result: `KpiQaPanel` — visible route status (Disabled — safe refusal) + deterministic alternative named; Q&A has no write path to any report, plan, certification, or publication (structurally read-only).
+- [x] Run AC-F-032-01 plus correctness, numeric fidelity, denied scope, unavailable result, injection, provenance, and kill-switch evaluations; require all release-set cases to pass before enablement.
+  - Result: release set green (6/6) recorded in `docs/operations/ai-qa-evaluation.md`; kill-switch + numeric-fidelity machinery shared with the Task 51 control plane; enablement gate = PENDING owner sign-offs (route stays disabled).
 
 **Done when:** F-032 passes the bounded evaluation and security review, or remains disabled without affecting certified dashboard/drill alternatives.  
 **Commit:** `feat(ai): add bounded evidence-linked kpi question answering`
