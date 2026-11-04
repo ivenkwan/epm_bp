@@ -24,6 +24,10 @@ import {
   CALENDAR_TASKS,
   PlanningCalendarPanel,
 } from '../features/planning-calendar/PlanningCalendarPanel';
+import {
+  VARIANCE_ROWS,
+  VarianceAnalysisPanel,
+} from '../features/variance-analysis/VarianceAnalysisPanel';
 import { ErrorBanner } from '../components/ErrorBanner';
 
 /**
@@ -122,6 +126,7 @@ export function AppShell(): ReactNode {
             <PlanVersionsPanel versions={PLAN_VERSIONS} />
             <PlanningModelPanel statementRows={STATEMENT_ROWS} balanceChecks={BALANCE_CHECKS} />
             <PlanningCalendarPanel tasks={CALENDAR_TASKS} />
+            <VarianceAnalysisPanel rows={VARIANCE_ROWS} />
           </section>
         ) : (
           <section aria-labelledby="reports-heading">

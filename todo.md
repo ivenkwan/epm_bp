@@ -1259,11 +1259,16 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-027, AC-F-027-01–02; depends on Tasks 12, 20, 39–43.
 
-- [ ] Write independent tests for Actual/Budget/Forecast/prior-period amount and percentage variance, shared dimensions/formula versions, drill reconciliation, uncertified actual scope, zero baseline, null values, and commentary actions.
-- [ ] Implement deterministic variance and KPI plan calculations using the certified semantic catalog. Zero-baseline percentage variance is undefined, never infinite; uncertified scope cannot enter certified comparison.
-- [ ] Implement planned financial/operational KPI values with the same formula version as actuals and explicit source/version lineage.
-- [ ] Build comparison, drill, annotation, commentary, and follow-up action views with certification/freshness labels and entitlement preservation.
-- [ ] Run AC-F-027-01–02 and cross-product KPI/variance golden tests; expect amount/detail reconciliation and governed unavailable results.
+- [x] Write independent tests for Actual/Budget/Forecast/prior-period amount and percentage variance, shared dimensions/formula versions, drill reconciliation, uncertified actual scope, zero baseline, null values, and commentary actions.
+  - Result: `VarianceCalculationTest` 10/10 — all three bases (+10% golden arithmetic both directions), formula-version mismatch refusal, exact drill reconciliation (100.00 = 80.00+20.00; broken sum flagged), uncertified scope exclusion, zero-baseline undefined percentage (incl. 0-vs-0), null unavailable semantics, commentary/follow-up governance, entitlement-preserving views.
+- [x] Implement deterministic variance and KPI plan calculations using the certified semantic catalog. Zero-baseline percentage variance is undefined, never infinite; uncertified scope cannot enter certified comparison.
+  - Result: `VarianceService` + `V032__kpi_plans_and_variance.sql` (renumbered from plan V030) — amount scale-2 HALF_UP, percentage scale-6 with `UNDEFINED_ZERO_BASELINE`/`UNAVAILABLE` governed states; uncertified actual and mixed formula versions return governed unavailable outcomes with notes, never figures.
+- [x] Implement planned financial/operational KPI values with the same formula version as actuals and explicit source/version lineage.
+  - Result: `planKpiValue` stamps the catalog formula version + `source_ref` lineage (plan/revision/kpi); KPIs without a certified formula version refuse planning.
+- [x] Build comparison, drill, annotation, commentary, and follow-up action views with certification/freshness labels and entitlement preservation.
+  - Result: `VarianceAnalysisPanel` — per-line Certified/Uncertified—excluded badges, Undefined (zero baseline) and Governed unavailable/Not entitled states, Drill/Comment/Follow-up actions; `epm_variance_commentary` carries EXPLAIN/MONITOR/FOLLOW_UP with named owners.
+- [x] Run AC-F-027-01–02 and cross-product KPI/variance golden tests; expect amount/detail reconciliation and governed unavailable results.
+  - Result: golden arithmetic documented in `docs/architecture/variance-and-kpi-planning.md` and reproduced exactly by tests; amount/detail reconciliation exact; FP&A/EPM sign-off on matching results = PENDING (owner-gated).
 
 **Done when:** F-027 criteria pass and FP&A/EPM owners sign matching actual/plan KPI and variance results.  
 **Commit:** `feat(planning): add reconciled actuals variance and kpi plans`
