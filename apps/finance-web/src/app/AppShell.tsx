@@ -44,6 +44,10 @@ import {
   ALLOCATION_RUNS,
   AllocationsPanel,
 } from '../features/allocations/AllocationsPanel';
+import {
+  ELIMINATIONS,
+  ManagementEliminationsPanel,
+} from '../features/management-eliminations/ManagementEliminationsPanel';
 import { ErrorBanner } from '../components/ErrorBanner';
 
 /**
@@ -145,6 +149,7 @@ export function AppShell(): ReactNode {
             <VarianceAnalysisPanel rows={VARIANCE_ROWS} />
             <ScenariosPanel scenarios={SCENARIOS} />
             <AllocationsPanel runs={ALLOCATION_RUNS} />
+            <ManagementEliminationsPanel rows={ELIMINATIONS} />
           </section>
         ) : (
           <section aria-labelledby="reports-heading">

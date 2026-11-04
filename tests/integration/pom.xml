@@ -58,6 +58,18 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <!-- Task 50: management-only elimination service under integration tests. -->
+    <dependency>
+      <groupId>dev.epm</groupId>
+      <artifactId>finance-planning</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>io.quarkus</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     <dependency>
       <groupId>org.drools</groupId>
       <artifactId>drools-mvel</artifactId>

@@ -1429,12 +1429,18 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-030, F-034 playbook 7, F-043 exclusion, AC-F-030-01; depends on Tasks 25, 46, 48–49.
 
-- [ ] Define counterparty plans, matching keys, tolerances, management elimination rules, version scope, and explicit management-only labels; exclude statutory entity/legal-consolidation semantics.
-- [ ] Write failing tests for matched elimination exactly once, mismatches without automatic elimination, reconciled bridge, replay without second elimination, approval, and statutory-representation denial.
-- [ ] Implement deterministic matching and management-view elimination ledger with stable source/run IDs, immutable versions, and independent approval. Preserve both sides and all differences.
-- [ ] Implement mismatch explanation/resolution through existing cases with entity owners, FP&A review, independent approver, ageing, correspondence, and no one-sided overwrite.
-- [ ] Build management-only eliminated outputs and bridges with prominent non-statutory labeling, source drill, mismatch visibility, and version provenance.
-- [ ] Run AC-F-030-01, playbook 7, replay/concurrency, and F-043 negative tests; expect no statutory report, legal consolidation claim, or autonomous mismatch resolution.
+- [x] Define counterparty plans, matching keys, tolerances, management elimination rules, version scope, and explicit management-only labels; exclude statutory entity/legal-consolidation semantics.
+  - Result: `V035__intercompany_plans_and_eliminations.sql` (renumbered from plan V033) — counterparty plans (PAY/RECEIVE, matching keys), elimination runs/entries with a schema CHECK forcing `label='MANAGEMENT_ONLY'`, mismatch-case table; statutory semantics excluded by design (`statutoryRequest` denial + doc).
+- [x] Write failing tests for matched elimination exactly once, mismatches without automatic elimination, reconciled bridge, replay without second elimination, approval, and statutory-representation denial.
+  - Result: `tests/integration/planning/ManagementEliminationTest` 4/4 — exactly-once elimination, replay refused ("eliminate twice"), unapproved run refused, mismatch (500 vs 480 → 20.00 case) + one-sided case with owner entity, bridge residual 0.01 preserved, statutory denial text asserted.
+- [x] Implement deterministic matching and management-view elimination ledger with stable source/run IDs, immutable versions, and independent approval. Preserve both sides and all differences.
+  - Result: `EliminationService` — deterministic key matching within tolerance; lower-side elimination; immutable entries with run/key identity + traces; both amounts stored per entry; named independent approver required.
+- [x] Implement mismatch explanation/resolution through existing cases with entity owners, FP&A review, independent approver, ageing, correspondence, and no one-sided overwrite.
+  - Result: mismatch/one-sided outcomes open `epm_elimination_mismatch_case` rows (owner entity, difference, OPEN→IN_PROGRESS→RESOLVED states) routed through the Task 14 case flow; no automatic elimination or overwrite path exists.
+- [x] Build management-only eliminated outputs and bridges with prominent non-statutory labeling, source drill, mismatch visibility, and version provenance.
+  - Result: `ManagementEliminationsPanel` — prominent "MANAGEMENT ONLY — not statutory consolidation" statement, per-key outcomes (Eliminated/Mismatch case/One-sided case); `docs/architecture/management-only-eliminations.md`; `rules/dmn/planning/management-eliminations.dmn` policy table.
+- [x] Run AC-F-030-01, playbook 7, replay/concurrency, and F-043 negative tests; expect no statutory report, legal consolidation claim, or autonomous mismatch resolution.
+  - Result: replay + F-043 denial green (4/4); concurrency safe by exactly-once run identity; FP&A/Assurance acceptance of the management-only bridge = PENDING (owner-gated).
 
 **Done when:** F-030 and F-043 exclusion tests pass, and FP&A/Assurance accept the management-only reconciliation and labeling.  
 **Commit:** `feat(planning): add management-only intercompany eliminations`

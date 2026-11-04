@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
+             xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/"
+             xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/"
+             id="management-eliminations" name="management-eliminations"
+             namespace="https://epm.dev/rules/planning">
+  <inputData id="withinToleranceInput" name="counterpartyWithinTolerance">
+    <variable id="withinToleranceVar" name="counterpartyWithinTolerance" typeRef="boolean"/>
+  </inputData>
+  <inputData id="bothSidesInput" name="bothSidesPresent">
+    <variable id="bothSidesVar" name="bothSidesPresent" typeRef="boolean"/>
+  </inputData>
+  <decision id="eliminationAction" name="Elimination Action">
+    <variable id="eliminationActionVar" name="Elimination Action" typeRef="string"/>
+    <informationRequirement id="reqTolerance">
+      <requiredInput href="#withinToleranceInput"/>
+    </informationRequirement>
+    <informationRequirement id="reqBothSides">
+      <requiredInput href="#bothSidesInput"/>
+    </informationRequirement>
+    <decisionTable id="actionTable" hitPolicy="FIRST">
+      <input id="toleranceCol" label="Counterparty amounts within declared tolerance">
+        <inputExpression id="toleranceExpr" typeRef="boolean">
+          <text>counterpartyWithinTolerance</text>
+        </inputExpression>
+      </input>
+      <input id="bothSidesCol" label="Both counterparty sides present">
+        <inputExpression id="bothSidesExpr" typeRef="boolean">
+          <text>bothSidesPresent</text>
+        </inputExpression>
+      </input>
+      <output id="actionOut" label="Action" name="action" typeRef="string"/>
+      <rule id="rOneSided">
+        <description>One-sided lines never eliminate; a case opens with the entity owner.</description>
+        <inputEntry id="rOneIn1"><text>-</text></inputEntry>
+        <inputEntry id="rOneIn2"><text>false</text></inputEntry>
+        <outputEntry id="rOneOut"><text>"OPEN_CASE_ONE_SIDED"</text></outputEntry>
+      </rule>
+      <rule id="rMismatch">
+        <description>Beyond tolerance never eliminates automatically; a mismatch case opens.</description>
+        <inputEntry id="rMisIn1"><text>false</text></inputEntry>
+        <inputEntry id="rMisIn2"><text>true</text></inputEntry>
+        <outputEntry id="rMisOut"><text>"OPEN_CASE_MISMATCH"</text></outputEntry>
+      </rule>
+      <rule id="rEliminate">
+        <description>Matched within tolerance: management-only elimination under an approved run; never statutory.</description>
+        <inputEntry id="rElimIn1"><text>true</text></inputEntry>
+        <inputEntry id="rElimIn2"><text>true</text></inputEntry>
+        <outputEntry id="rElimOut"><text>"ELIMINATE_MANAGEMENT_ONLY"</text></outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="elimDiagram">
+      <dmndi:DMNShape id="shapeAction" dmnElementRef="eliminationAction">
+        <dc:Bounds x="100" y="100" width="180" height="80"/>
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>
