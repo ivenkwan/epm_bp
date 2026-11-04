@@ -37,3 +37,10 @@ mappings gain a dedicated visual studio in R4 (Task 57, `mapping-studio.md`): th
 same propose/compare/approve/activate/roll-back semantics above, driven from
 searchable grids and timeline views, with no vendor-side code changes and no loss of
 history. This runbook remains the semantic contract the studio implements.
+
+## Mapping studio change flow (F-045 / Task 57)
+
+The visual studio implements this runbook's semantics for mapping tables, chart of
+accounts, accounts, and group mappings: propose on a timeline (overlap refusal with
+the conflicting interval stated), preview impact, independent approval, activation
+with provenance, and rollback as a new version. See `mapping-studio.md`.

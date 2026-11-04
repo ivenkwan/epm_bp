@@ -61,6 +61,10 @@ import {
   PROMOTIONS,
   AdministrationPanel,
 } from '../features/administration/AdministrationPanel';
+import {
+  MAPPING_VERSIONS,
+  MappingStudioPanel,
+} from '../features/mapping-studio/MappingStudioPanel';
 import { ErrorBanner } from '../components/ErrorBanner';
 
 /**
@@ -167,6 +171,7 @@ export function AppShell(): ReactNode {
             <KpiQaPanel state={QA_ROUTE_STATE} />
             <ForecastChallengerPanel rows={CHALLENGER_ROWS} />
             <AdministrationPanel rows={PROMOTIONS} />
+            <MappingStudioPanel versions={MAPPING_VERSIONS} />
           </section>
         ) : (
           <section aria-labelledby="reports-heading">
