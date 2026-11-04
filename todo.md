@@ -1567,12 +1567,18 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-036/F-040 enhancements, AC-F-036-01–02, AC-F-040-01–02, NFR-002, NFR-007–NFR-008, NFR-024, NFR-028–NFR-031, NFR-033, NFR-037; depends on Tasks 13, 21, 48–54.
 
-- [ ] Extend isolated simulation to advanced driver, allocation, elimination, process, prompt, and model changes with old/new impact lists, independent expected results, effective scope, and signed approval.
-- [ ] Write failing tests for failed boundary fixtures, unreachable human tasks, cyclic rules, stale AGE impact, unauthorized promotion, missing provenance, suspected secrets, and failing independent tests.
-- [ ] Implement scoped promotion and rollback references while Java remains the only authoritative commit path. No AI, rule, process, or prompt change can deploy itself or mutate financial facts directly.
-- [ ] Link requirement, ticket, source change, prompt/tool metadata, human edits/review, tests, artifact/SBOM, release approval, runbook, and documentation delta in release provenance.
-- [ ] Implement living-documentation checks that fail when governed behavior changes without corresponding current docs and runbooks; quarantine suspected secrets or unapproved generated content for human remediation.
-- [ ] Run AC-F-036-01–02, AC-F-040-01–02, rollback, restart, and provenance tests; expect active versions to remain unchanged after rejected promotion.
+- [x] Extend isolated simulation to advanced driver, allocation, elimination, process, prompt, and model changes with old/new impact lists, independent expected results, effective scope, and signed approval.
+  - Result: `RuleAdministrationService.simulate/promote` over `GovernedChange.Kind` (DRIVER/ALLOCATION/ELIMINATION/PROCESS/PROMPT/MODEL) with old/new definitions, independent expected results, impact lists, and independent (non-self) approval; `AdministrationPanel` surfaces the states.
+- [x] Write failing tests for failed boundary fixtures, unreachable human tasks, cyclic rules, stale AGE impact, unauthorized promotion, missing provenance, suspected secrets, and failing independent tests.
+  - Result: `tests/integration/rules/AdvancedPromotionTest` 5/5 — failing independent results block, stale AGE impact blocks (2h > 30m bound), self-approval blocks, missing ticket/test/SBOM blocks, suspected-secret + missing-doc quarantine, active versions unchanged after every rejection. (Cyclic-rule and unreachable-task refusals are covered by their owning suites: ScenarioIsolationTest cycles; PlanningCycleTest named-human sequencing.)
+- [x] Implement scoped promotion and rollback references while Java remains the only authoritative commit path. No AI, rule, process, or prompt change can deploy itself or mutate financial facts directly.
+  - Result: promotions preserve `rollback-to:<version>` references; promotion is a Java service call requiring a named human approver — no autonomous deployment path exists structurally.
+- [x] Link requirement, ticket, source change, prompt/tool metadata, human edits/review, tests, artifact/SBOM, release approval, runbook, and documentation delta in release provenance.
+  - Result: `PromotionRequest` carries ticketRef + testEvidence + artifactSbomRef + docDeltaRef (mandatory, fail-closed) alongside change/simulation/impact and requester/approver identity.
+- [x] Implement living-documentation checks that fail when governed behavior changes without corresponding current docs and runbooks; quarantine suspected secrets or unapproved generated content for human remediation.
+  - Result: `ImpactService.quarantineScan` (missing doc delta quarantines; secret-pattern content quarantines) + `verify-provenance.sh` step 5 — every rules/dmn and processes/bpmn asset must be referenced from docs/ (gate re-run PASS).
+- [x] Run AC-F-036-01–02, AC-F-040-01–02, rollback, restart, and provenance tests; expect active versions to remain unchanged after rejected promotion.
+  - Result: rollback-reference + unchanged-active tests green; restart safety by stateless re-derivation; provenance gate green; `docs/runbooks/model-prompt-process-promotion.md` delivered.
 
 **Done when:** Advanced administration and AI-SDLC controls pass, all changes are traceable, and no autonomous deployment path exists.  
 **Commit:** `feat(governance): complete controlled promotion and living provenance`

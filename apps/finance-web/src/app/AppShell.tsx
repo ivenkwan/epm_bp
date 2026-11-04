@@ -57,6 +57,10 @@ import {
   CHALLENGER_ROWS,
   ForecastChallengerPanel,
 } from '../features/forecast-challenger/ForecastChallengerPanel';
+import {
+  PROMOTIONS,
+  AdministrationPanel,
+} from '../features/administration/AdministrationPanel';
 import { ErrorBanner } from '../components/ErrorBanner';
 
 /**
@@ -162,6 +166,7 @@ export function AppShell(): ReactNode {
             <AiCommentaryPanel status={PILOT_STATUS} />
             <KpiQaPanel state={QA_ROUTE_STATE} />
             <ForecastChallengerPanel rows={CHALLENGER_ROWS} />
+            <AdministrationPanel rows={PROMOTIONS} />
           </section>
         ) : (
           <section aria-labelledby="reports-heading">
