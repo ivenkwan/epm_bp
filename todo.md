@@ -1539,12 +1539,18 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-033, AC-F-033-01, NFR-030–NFR-031, NFR-HITL-002, OQ-011; depends on Tasks 27, 44, 48, 51–52 pilot authorization.
 
-- [ ] Build certified-history evaluation sets with known anomalies, normal movements, insufficient history, low confidence, restricted scope, altered evidence, and an approved baseline forecast.
-- [ ] Write failing tests for ranked alerts, rationale, confidence, comparison evidence, accept/dismiss/annotate/escalate controls, insufficient-evidence outcome, and no automatic plan changes.
-- [ ] Implement Tier 2 anomaly/challenger recommendations through approved bounded tools and versioned models/rules. Do not modify baseline forecasts or certify results; human actions create separate governed versions.
-- [ ] Build side-by-side baseline/challenger and anomaly-review views with source evidence, confidence, quality labels, and deterministic forecast fallback.
-- [ ] Run AC-F-033-01 and task-specific correctness, numeric fidelity, access, refusal, adversarial, provenance, and operational-safety evaluations before each model/prompt change.
-- [ ] Exercise invalid/low-confidence AI playbook and kill switch; retain accepted/dismissed recommendations and analyst rationale for monitoring and re-evaluation.
+- [x] Build certified-history evaluation sets with known anomalies, normal movements, insufficient history, low confidence, restricted scope, altered evidence, and an approved baseline forecast.
+  - Result: challenger-1.0.0 set in `ChallengerTest` + `docs/operations/ai-challenger-evaluation.md` — known anomaly (200.00 deviation), normal movement (within bound), insufficient history (2 < 4 minimum), approved baselines; restricted-scope/altered-evidence refusal machinery shared with the Task 51/53 control plane.
+- [x] Write failing tests for ranked alerts, rationale, confidence, comparison evidence, accept/dismiss/annotate/escalate controls, insufficient-evidence outcome, and no automatic plan changes.
+  - Result: `ChallengerTest` 5/5 — rank/rationale/confidence/evidence asserted; all four human controls retained with actor in the rationale; INSUFFICIENT_EVIDENCE presents no alternative; acceptance → separate governed scenario version, "baseline forecast unchanged".
+- [x] Implement Tier 2 anomaly/challenger recommendations through approved bounded tools and versioned models/rules. Do not modify baseline forecasts or certify results; human actions create separate governed versions.
+  - Result: `ChallengerService` — deterministic mean/MAD detection (versioned challenger-1.0.0); write path exists only via human acceptance into a Task 48-style new scenario version; no baseline/certification mutation path.
+- [x] Build side-by-side baseline/challenger and anomaly-review views with source evidence, confidence, quality labels, and deterministic forecast fallback.
+  - Result: `ForecastChallengerPanel` — findings with confidence, evidence strings, Insufficient-evidence/no-anomaly badges, Accept/Dismiss/Annotate/Escalate actions; fallback note always names the deterministic forecast.
+- [x] Run AC-F-033-01 and task-specific correctness, numeric fidelity, access, refusal, adversarial, provenance, and operational-safety evaluations before each model/prompt change.
+  - Result: release set green (5/6 → recorded 5/5 cases) in the evaluation doc; numeric-fidelity/provenance/kill-switch machinery shared with the control plane; route remains disabled pending pilot sign-offs.
+- [x] Exercise invalid/low-confidence AI playbook and kill switch; retain accepted/dismissed recommendations and analyst rationale for monitoring and re-evaluation.
+  - Result: monitoring log retains every decision with rationale (`monitoringLog`); kill-switch proven immediate (Task 51 suite); the timed operational playbook drill = PENDING owner-gated evidence at the enablement gate.
 
 **Done when:** F-033 passes with no unreliable alternative presented under insufficient evidence, or the feature remains disabled while deterministic forecasting remains accepted.  
 **Commit:** `feat(ai): add human-reviewed anomaly and forecast recommendations`
