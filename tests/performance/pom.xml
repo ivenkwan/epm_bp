@@ -54,5 +54,17 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <!-- Task 56: final integrated-model workload. -->
+    <dependency>
+      <groupId>dev.epm</groupId>
+      <artifactId>finance-planning</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>io.quarkus</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
   </dependencies>
 </project>
