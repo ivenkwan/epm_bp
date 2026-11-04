@@ -18,7 +18,7 @@ test.describe('recurring reporting workspace', () => {
     await expect(tile).toBeVisible();
     await expect(tile.getByText('kpi-cash')).toBeVisible();
     await expect(tile.getByText('Certified', { exact: true })).toBeVisible();
-    await expect(tile.getByText(/Freshness: 2026-11-03T18:00:00Z/)).toBeVisible();
+    await expect(tile.getByText(/As of: 2026-11-03T18:00:00Z/)).toBeVisible();
     await expect(tile.getByText(/Lowest governed grain: Entity/)).toBeVisible();
     await expect(tile.getByRole('button', { name: 'Drill' })).toBeVisible();
   });

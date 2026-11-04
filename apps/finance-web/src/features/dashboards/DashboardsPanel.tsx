@@ -48,7 +48,7 @@ export function DashboardsPanel({
               {tile.certified ? 'Certified' : 'Uncertified — excluded'}
             </span>
             <p style={{ margin: '0.25rem 0 0' }}>
-              Freshness: {tile.asOfUtc} · Lowest governed grain: {tile.lowestGrain}
+              As of: {tile.asOfUtc} · Lowest governed grain: {tile.lowestGrain}
             </p>
             <button type="button">Slice</button> <button type="button">Drill</button>{' '}
             <button type="button">Save authorized view</button>

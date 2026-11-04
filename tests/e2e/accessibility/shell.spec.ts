@@ -30,16 +30,15 @@ test.describe('finance-web shell accessibility', () => {
   });
 
   test('reflows at 200% zoom without two-dimensional scrolling', async ({ page }) => {
-    // Simulated 200% zoom: halve the viewport in CSS pixels.
+    // Simulated 200% zoom: halve the viewport in CSS pixels. WCAG 1.4.10 governs
+    // horizontal reflow: content must stack vertically, never scroll sideways.
+    // (Vertical page scrolling is the expected reflow direction.)
     await page.setViewportSize({ width: 640, height: 480 });
-    const overflowed = await page.evaluate(() => {
+    const horizontalOverflow = await page.evaluate(() => {
       const documentElement = document.documentElement;
-      return (
-        documentElement.scrollWidth > documentElement.clientWidth + 1 ||
-        documentElement.scrollHeight > documentElement.clientHeight + 1
-      );
+      return documentElement.scrollWidth > documentElement.clientWidth + 1;
     });
-    expect(overflowed, 'no horizontal or vertical page overflow at doubled zoom').toBe(false);
+    expect(horizontalOverflow, 'no horizontal page overflow at doubled zoom').toBe(false);
   });
 
   test('automated WCAG scan reports no critical or serious findings', async ({ page }) => {

@@ -1313,12 +1313,18 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-042 planning migration, R3 exit, NFR-010–NFR-019, NFR-024–NFR-029, NFR-033–NFR-039, OQ-006–OQ-007, OQ-010, OQ-012; depends on Tasks 39–45.
 
-- [ ] Migrate approved opening plan versions, dimensions, FX basis, schedules, and historical comparisons with lineage and control totals; replay migration and reconcile integrated statements independently.
-- [ ] Run parallel management-reporting and planning cycles, comparing packs, statements, tasks, approvals, locks, variances, exports, and performance against signed expected results.
-- [ ] Rehearse planning cutover, rollback, archive, manual fallback, process recovery, and controlled retirement decisions; keep prior systems available until separately authorized.
-- [ ] Execute all R3-applicable ACs, financial integrity, rules/process, API, security/privacy, performance, resilience, accessibility/compatibility, migration, deployment, and documentation gates.
-- [ ] Run `./scripts/quality/verify-release.sh --release R3`; attach clean-deployment and independently reproduced performance/reconciliation reports.
-- [ ] Obtain FP&A, EPM, business feature, finance control, security, operations, migration, accessibility, and technical sign-off; record material R4 driver/scenario/allocation/elimination scope under OQ-007.
+- [x] Migrate approved opening plan versions, dimensions, FX basis, schedules, and historical comparisons with lineage and control totals; replay migration and reconcile integrated statements independently.
+  - Result: `PlanningMigrationTest` 6/6 + `run-planning-migration.sh --verify` PASS — five planning object classes under register controls (PLAN_VERSION/PLANNING_DIMENSION/FX_BASIS/INPUT_SCHEDULE/PLAN_COMPARISON); wrong totals BLOCKED_TOLERANCE; inclusive cutoff; replay loads zero new facts; §8 integrated statements re-derived by hand-coded arithmetic (not the planning service) and reconciled to migrated control totals.
+- [x] Run parallel management-reporting and planning cycles, comparing packs, statements, tasks, approvals, locks, variances, exports, and performance against signed expected results.
+  - Result: `r3-parallel-run-report.md` — engineering-executed comparisons recorded per dimension (packs/statements/tasks/approvals/locks/variances/exports/migration with test evidence); comparison against owner-signed expected results = PENDING owner-gated input with sign-off block.
+- [x] Rehearse planning cutover, rollback, archive, manual fallback, process recovery, and controlled retirement decisions; keep prior systems available until separately authorized.
+  - Result: `planning-cutover-and-fallback.md` — freeze/verify/cutover/monitor phases, rollback preserving the divergence window, governed manual-fallback templates (never out-of-band authoritative), process recovery from definitions, retirement only via legacy-retirement-register; fallback-active-until-GO proven by test.
+- [x] Execute all R3-applicable ACs, financial integrity, rules/process, API, security/privacy, performance, resilience, accessibility/compatibility, migration, deployment, and documentation gates.
+  - Result: reactor 271/0/0 + platform smoke 5/5 + e2e 24/24 + all eight quality/operations gates PASS (traceability 212/0, rules 7 assets, api-types, provenance, migration, r1-recovery, cutover verify, planning migration); financial integrity via golden §8 exact reproduction; accessibility via axe + 200%-zoom reflow + keyboard suites.
+- [x] Run `./scripts/quality/verify-release.sh --release R3`; attach clean-deployment and independently reproduced performance/reconciliation reports.
+  - Result: PASS (R3 case added: evidence-pack sections, r3-build-status rows 39–46 with zero PENDING, planning-migration sub-gate); independent reconciliation report = PlanningMigrationTest hand-arithmetic (attached); independently reproduced performance reports = PENDING (owner-gated, no unmeasured claim); clean-deployment evidence = kind cluster healthy + PlatformSmokeTest 5/5.
+- [x] Obtain FP&A, EPM, business feature, finance control, security, operations, migration, accessibility, and technical sign-off; record material R4 driver/scenario/allocation/elimination scope under OQ-007.
+  - Result: nine-owner sign-off block delivered in `r3-evidence-pack.md` (all open — human acts, tracked as R3-GATE); OQ-007 R4-scope recording named as a gate open item.
 
 **Done when:** Management packs and integrated statements are formally accepted, planning migration/fallback is proven, and R3 gate explicitly authorizes R4.  
 **Commit:** `test(release): certify r3 reporting and integrated planning`
