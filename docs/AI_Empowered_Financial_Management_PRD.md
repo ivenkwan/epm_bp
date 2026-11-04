@@ -1168,7 +1168,7 @@ No release may pass solely because generated tests pass. Expected financial resu
 | Performance targets are accepted without workload context | Unreliable service expectations | Medium | Signed volumes/concurrency and independently reproducible performance evidence. |
 | Manual workarounds persist after technical go-live | Benefits and controls are not realized | Medium | Training, adoption measurement, parallel-run exit, explicit legacy retirement approval. |
 
-### 12.4 Open Questions
+### 12.4 Pre-deployment Checklist (Open Questions)
 
 | ID | Question | Decision owner and required timing |
 |---|---|---|
