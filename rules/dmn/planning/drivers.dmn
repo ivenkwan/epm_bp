@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
+             xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/"
+             xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/"
+             id="drivers" name="drivers"
+             namespace="https://epm.dev/rules/planning">
+  <inputData id="inRangeInput" name="driverValueInRange">
+    <variable id="inRangeVar" name="driverValueInRange" typeRef="boolean"/>
+  </inputData>
+  <inputData id="acyclicInput" name="dependenciesAcyclic">
+    <variable id="acyclicVar" name="dependenciesAcyclic" typeRef="boolean"/>
+  </inputData>
+  <decision id="driverValidity" name="Driver Validity">
+    <variable id="driverValidityVar" name="Driver Validity" typeRef="string"/>
+    <informationRequirement id="reqInRange">
+      <requiredInput href="#inRangeInput"/>
+    </informationRequirement>
+    <informationRequirement id="reqAcyclic">
+      <requiredInput href="#acyclicInput"/>
+    </informationRequirement>
+    <decisionTable id="validityTable" hitPolicy="FIRST">
+      <input id="rangeCol" label="Override within the approved driver range">
+        <inputExpression id="rangeExpr" typeRef="boolean">
+          <text>driverValueInRange</text>
+        </inputExpression>
+      </input>
+      <input id="acyclicCol" label="Dependency graph acyclic">
+        <inputExpression id="acyclicExpr" typeRef="boolean">
+          <text>dependenciesAcyclic</text>
+        </inputExpression>
+      </input>
+      <output id="validityOut" label="Validity" name="validity" typeRef="string"/>
+      <rule id="rCircular">
+        <description>Circular dependencies make any simulation invalid.</description>
+        <inputEntry id="rCircIn1"><text>-</text></inputEntry>
+        <inputEntry id="rCircIn2"><text>false</text></inputEntry>
+        <outputEntry id="rCircOut"><text>"CIRCULAR"</text></outputEntry>
+      </rule>
+      <rule id="rOutOfRange">
+        <description>Out-of-range driver values are rejected; the baseline is untouched.</description>
+        <inputEntry id="rRangeIn1"><text>false</text></inputEntry>
+        <inputEntry id="rRangeIn2"><text>true</text></inputEntry>
+        <outputEntry id="rRangeOut"><text>"OUT_OF_RANGE"</text></outputEntry>
+      </rule>
+      <rule id="rValid">
+        <description>In range and acyclic: deterministic simulation proceeds.</description>
+        <inputEntry id="rValidIn1"><text>true</text></inputEntry>
+        <inputEntry id="rValidIn2"><text>true</text></inputEntry>
+        <outputEntry id="rValidOut"><text>"VALID"</text></outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="driversDiagram">
+      <dmndi:DMNShape id="shapeValidity" dmnElementRef="driverValidity">
+        <dc:Bounds x="100" y="100" width="180" height="80"/>
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

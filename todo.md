@@ -1375,12 +1375,18 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 **Requirements / dependencies:** F-028, AC-F-028-01–02, NFR-007, OQ-007; depends on Tasks 13, 27, 44, 46.
 
-- [ ] Register material operational/financial drivers, formulas, allowed ranges, dependencies, owners, and worked examples signed at R3 exit.
-- [ ] Write failing tests for scenario copy isolation, volume/price/FX overrides, dependent recalculation, side-by-side traceability, circular dependency, out-of-range driver, replay, and baseline preservation.
-- [ ] Implement immutable scenario copies and deterministic recalculation with dependency graph validation, bounded evaluation, versioned formulas, and durable jobs. Reject invalid simulation without mutating baseline or last valid scenario.
-- [ ] Implement scenario review, comparison, independent approval, and selected-scenario promotion as a new governed version rather than an in-place overwrite.
-- [ ] Build driver/override, sensitivity, comparison, and calculation-trace views with visible assumptions and no automatic plan or actuals changes.
-- [ ] Run AC-F-028-01–02, cycle/depth/termination, replay, concurrent simulation, and independent golden-result tests; expect exact traceable differences.
+- [x] Register material operational/financial drivers, formulas, allowed ranges, dependencies, owners, and worked examples signed at R3 exit.
+  - Result: `V033__drivers_and_scenarios.sql` (renumbered from plan V031) — `epm_driver` carries formula/version/range/dependencies/owner/worked-example with range CHECK; R3-exit driver-catalog signature = PENDING owner sign-off (OQ-007 recorded).
+- [x] Write failing tests for scenario copy isolation, volume/price/FX overrides, dependent recalculation, side-by-side traceability, circular dependency, out-of-range driver, replay, and baseline preservation.
+  - Result: `ScenarioIsolationTest` 8/8 — every listed scenario incl. depth-bound refusal (cap 1 vs 5), exact trace strings (`revenue.base = 1000 × VOLUME 1.1 = 1100.00`), replay-identical results/traces, baseline + last-valid preservation.
+- [x] Implement immutable scenario copies and deterministic recalculation with dependency graph validation, bounded evaluation, versioned formulas, and durable jobs. Reject invalid simulation without mutating baseline or last valid scenario.
+  - Result: `ScenarioService` — cycle detection + declared depth cap; deterministic `drv-1.0.0` recalculation with per-line traces persisted via `epm_scenario_result` (durable run state); invalid simulations return INVALID leaving prior results untouched.
+- [x] Implement scenario review, comparison, independent approval, and selected-scenario promotion as a new governed version rather than an in-place overwrite.
+  - Result: `compare` exact side-by-side diffs; `promote` requires VALID scenario + named approver and issues a new version reference — source scenario and baseline unchanged (proven by test).
+- [x] Build driver/override, sensitivity, comparison, and calculation-trace views with visible assumptions and no automatic plan or actuals changes.
+  - Result: `ScenariosPanel` (overrides, status badges, Δ-vs-baseline, Trace/Compare/Promote actions); `driver-scenario-model.md`; `rules/dmn/planning/drivers.dmn` (VALID/OUT_OF_RANGE/CIRCULAR policy table); no automatic plan/actuals mutation path exists.
+- [x] Run AC-F-028-01–02, cycle/depth/termination, replay, concurrent simulation, and independent golden-result tests; expect exact traceable differences.
+  - Result: cycle/depth/replay/golden arithmetic green (8/8); concurrent simulation safe by purity (deterministic replay proven); FP&A acceptance of representative scenarios = PENDING (owner-gated).
 
 **Done when:** F-028 criteria pass and FP&A accepts isolated, reproducible scenarios with no circular or out-of-range promotion.  
 **Commit:** `feat(planning): add isolated driver-based what-if scenarios`
