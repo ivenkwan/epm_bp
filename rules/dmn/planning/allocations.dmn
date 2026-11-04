@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
+             xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/"
+             xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/"
+             id="allocations" name="allocations"
+             namespace="https://epm.dev/rules/planning">
+  <inputData id="sequenceValidInput" name="stepSequenceValid">
+    <variable id="sequenceValidVar" name="stepSequenceValid" typeRef="boolean"/>
+  </inputData>
+  <inputData id="poolPositiveInput" name="poolBalancePositive">
+    <variable id="poolPositiveVar" name="poolBalancePositive" typeRef="boolean"/>
+  </inputData>
+  <decision id="allocationRunValidity" name="Allocation Run Validity">
+    <variable id="allocationRunValidityVar" name="Allocation Run Validity" typeRef="string"/>
+    <informationRequirement id="reqSequence">
+      <requiredInput href="#sequenceValidInput"/>
+    </informationRequirement>
+    <informationRequirement id="reqPool">
+      <requiredInput href="#poolPositiveInput"/>
+    </informationRequirement>
+    <decisionTable id="allocValidityTable" hitPolicy="FIRST">
+      <input id="sequenceCol" label="Steps numbered sequentially with known pools">
+        <inputExpression id="sequenceExpr" typeRef="boolean">
+          <text>stepSequenceValid</text>
+        </inputExpression>
+      </input>
+      <input id="poolCol" label="Step pool balance is positive">
+        <inputExpression id="poolExpr" typeRef="boolean">
+          <text>poolBalancePositive</text>
+        </inputExpression>
+      </input>
+      <output id="validityOut" label="Validity" name="validity" typeRef="string"/>
+      <rule id="rInvalidSequence">
+        <description>Out-of-sequence steps or unknown pools refuse the model before any entry lands.</description>
+        <inputEntry id="rSeqIn1"><text>false</text></inputEntry>
+        <inputEntry id="rSeqIn2"><text>-</text></inputEntry>
+        <outputEntry id="rSeqOut"><text>"INVALID_SEQUENCE"</text></outputEntry>
+      </rule>
+      <rule id="rZeroPool">
+        <description>A zero pool allocates nothing — a legitimate no-op, not an error.</description>
+        <inputEntry id="rZeroIn1"><text>true</text></inputEntry>
+        <inputEntry id="rZeroIn2"><text>false</text></inputEntry>
+        <outputEntry id="rZeroOut"><text>"ZERO_POOL_NOOP"</text></outputEntry>
+      </rule>
+      <rule id="rValid">
+        <description>Valid model: totals preserved exactly with largest-remainder residuals.</description>
+        <inputEntry id="rValidIn1"><text>true</text></inputEntry>
+        <inputEntry id="rValidIn2"><text>true</text></inputEntry>
+        <outputEntry id="rValidOut"><text>"VALID"</text></outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="allocDiagram">
+      <dmndi:DMNShape id="shapeAllocValidity" dmnElementRef="allocationRunValidity">
+        <dc:Bounds x="100" y="100" width="180" height="80"/>
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>
