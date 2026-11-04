@@ -50,4 +50,16 @@ else
 fi
 
 # 4. No untracked build outputs are required for any of the above.
-echo "PASS: clean export builds with committed assets only"
+
+# 5. Living documentation (Task 55): every governed rule/process asset must be
+#    mentioned by at least one committed doc or runbook — behavior never ships
+#    undocumented.
+for asset in rules/dmn/*/*.dmn processes/bpmn/*.bpmn; do
+  [ -f "${asset}" ] || continue
+  base="$(basename "${asset}")"
+  if ! grep -rq "${base}" docs/ 2>/dev/null; then
+    fail "living-documentation check: ${asset} has no doc/runbook reference"
+  fi
+done
+
+echo "PASS: clean export builds with committed assets only; governed assets documented"

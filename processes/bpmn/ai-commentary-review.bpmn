@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             id="ai-commentary-review-definitions"
+             targetNamespace="https://epm.dev/processes/ai"
+             typeLanguage="http://www.java.com/javaTypes"
+             expressionLanguage="http://www.mvel.org/2.0">
+  <process id="ai_commentary_review" name="AI Commentary Review" isExecutable="true" processType="Private">
+    <!-- Coordinated by Kogito; commentary state and provenance are Java/PostgreSQL-owned
+         (epm_ai_provenance). AI drafts are unpublished regardless of model confidence;
+         only an independent human reviewer (never the draft actor) publishes. Timers and
+         AI never approve, publish, or disable anything autonomously. -->
+    <startEvent id="draftReady" name="Draft ready (unpublished)"/>
+    <sequenceFlow id="f1" sourceRef="draftReady" targetRef="authorReviewTask"/>
+    <userTask id="authorReviewTask" name="Author edit or reject">
+      <documentation>Author edits or rejects the draft; edited drafts return for re-review.</documentation>
+    </userTask>
+    <sequenceFlow id="f2" sourceRef="authorReviewTask" targetRef="independentReviewTask"/>
+    <userTask id="independentReviewTask" name="Independent review and publish">
+      <documentation>Reviewer must differ from the draft actor; rejected or invalid AI text never appears in published editions.</documentation>
+    </userTask>
+    <sequenceFlow id="f3" sourceRef="independentReviewTask" targetRef="reviewDone"/>
+    <endEvent id="reviewDone" name="Published or rejected with provenance"/>
+  </process>
+</definitions>
