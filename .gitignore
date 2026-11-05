@@ -16,3 +16,5 @@ test-results/
 receipts/
 .secrets/
 deploy/kubernetes/base/generated/
+
+__pycache__/

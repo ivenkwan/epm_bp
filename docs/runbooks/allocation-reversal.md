@@ -1,6 +1,9 @@
 # Runbook: Allocation Reversal (Task 49)
 
-Controlled reversal of an executed multi-step/step-down allocation run.
+Controlled reversal of an executed multi-step/step-down allocation run. Run validity
+(sequence, zero-pool no-op, largest-remainder residuals) is governed by
+`rules/dmn/planning/allocations.dmn` (`VALID` / `INVALID_SEQUENCE` /
+`ZERO_POOL_NOOP`), kept in agreement with `AllocationService` by test.
 
 ## Invariants
 

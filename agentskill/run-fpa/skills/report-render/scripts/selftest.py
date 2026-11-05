@@ -21,6 +21,7 @@ from __future__ import annotations
 import os
 import re
 import sys
+import tempfile
 import zipfile
 from pathlib import Path
 
@@ -151,8 +152,13 @@ def build_report(out_dir: Path) -> Path:
 def main() -> int:
     # Scratch by default, never a delivery directory: this is a development gate,
     # and a self-test artifact landing where deliverables are collected is
-    # indistinguishable from a report nobody asked for.
-    out_dir = Path(sys.argv[1] if len(sys.argv) > 1 else "/tmp/fin_report_selftest")
+    # indistinguishable from a report nobody asked for. The optional argument may
+    # only *rename* the scratch leaf directly under the system temp root: directory
+    # components, absolute paths, and traversal (`..`) are discarded before the
+    # path is joined, so every sink the probes write to stays inside the trusted
+    # scratch root no matter what a caller passes.
+    requested = Path(sys.argv[1] if len(sys.argv) > 1 else "").name
+    out_dir = (Path(tempfile.gettempdir()) / (requested or "fin_report_selftest")).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"font: {__import__('fin_report').fonts.resolve()}")

@@ -51,6 +51,20 @@ from reportlab.lib.units import mm
 from . import cjk, rules, theme
 from .refs import BARE_DOMAIN
 
+
+def _safe_xml_root(blob: bytes) -> ElementTree.Element:
+    """Parse an OOXML part with entity processing refused outright.
+
+    Legitimate Word-written parts never declare a DTD, so any part that carries
+    one is hostile (billion-laughs internal expansion or an external-entity
+    fetch) rather than merely unusual. Refusing before the parser sees the
+    declaration keeps the verifier safe against a substituted package without
+    pulling in a dependency.
+    """
+    if b"<!DOCTYPE" in blob or b"<!ENTITY" in blob:
+        raise ValueError("XML part declares a DTD (entity expansion refused)")
+    return ElementTree.fromstring(blob)
+
 CJK = re.compile(r"[㐀-䶿一-鿿豈-﫿]")
 #: The PDF standard-14 fonts are present in every conforming viewer, so they are
 #: not the embedding problem. reportlab puts Helvetica in a page's resources by
@@ -1223,7 +1237,7 @@ def _docx_check_citations(report: Report, parts: dict[str, bytes],
     rels_xml = parts.get("word/_rels/document.xml.rels", b"")
     external: dict[str, tuple[str, str | None]] = {}
     if rels_xml:
-        for rel in ElementTree.fromstring(rels_xml):
+        for rel in _safe_xml_root(rels_xml):
             if rel.get("Type", "").endswith("/hyperlink"):
                 external[rel.get("Id")] = (rel.get("Target", ""), rel.get("TargetMode"))
     report.links_external = len(external)
@@ -1619,11 +1633,19 @@ def _docx_check_schema(report: Report, parts: dict[str, bytes]) -> None:
     if not Path(schema_path).is_file():
         report.warnings.append(f"{SCHEMA_ENV}={schema_path} is not a file")
         return
-    schema = etree.XMLSchema(etree.parse(schema_path))
+    # Entities resolved never: a schema or part that tries to pull in an external
+    # entity is hostile, not merely unusual (no network, no entity expansion).
+    # Each blob is additionally DTD-rejected before parsing — legitimate
+    # Word-written parts never declare one.
+    hard_parser = etree.XMLParser(resolve_entities=False, no_network=True)
+    schema = etree.XMLSchema(etree.parse(schema_path, hard_parser))
     for name, blob in sorted(parts.items()):
         if not name.startswith("word/") or not name.endswith(".xml"):
             continue
-        if schema.validate(etree.fromstring(blob)):
+        if b"<!DOCTYPE" in blob or b"<!ENTITY" in blob:
+            report.failures.append(f"{name} declares a DTD (entity expansion refused)")
+            continue
+        if schema.validate(etree.fromstring(blob, hard_parser)):
             continue
         # Drop the markup-compatibility noise. Every part Word itself writes carries
         # `mc:Ignorable`, which the strict schema rejects while Word obviously
@@ -1691,7 +1713,7 @@ def verify_docx(path: str | Path, render_dir: str | Path | None = None,
         report.failures.append("the package has no word/document.xml")
         return report
 
-    document = ElementTree.fromstring(parts["word/document.xml"])
+    document = _safe_xml_root(parts["word/document.xml"])
     blocks = _docx_blocks(document)
     text = "\n".join(blocks)
     report.page_chars = [len(b.strip()) for b in blocks]

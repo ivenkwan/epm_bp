@@ -1,6 +1,7 @@
 # API Conventions (`/api/v1`)
 
 Single source of truth for the shared component shapes: `services/finance-core/src/main/openapi/common-v1.yaml`.
+Endpoint-by-endpoint reference with working examples: `docs/api/API_REFERENCE.md`.
 
 ## Non-negotiables
 
