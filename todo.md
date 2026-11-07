@@ -1648,6 +1648,254 @@ docs/operations/                  SLO, scope, evidence, cost, training, acceptan
 
 ---
 
+# R5 — Experience Completion and Operational Consoles
+
+**Entry:** R4 engineering complete (owner gates tracked per release; R5 follows the
+same convention — owner signatures do not block engineering). Twelve surfaces have
+working, tested backends but no browser experience: five built-unmounted shells
+(O-B8: master data, source contracts, load evidence, KPI catalog, exception cases)
+and seven domain gaps (treasury cockpit, audit/revision explorer, migration/cutover
+dashboard, access/entitlement admin, job monitor, AGE lineage viewer,
+reconciliation/certification console).
+**Exit:** All twelve screens are live, data-wired, entitlement-checked, accessible,
+and e2e-covered; the coverage matrix and traceability register map every screen task
+to its features; `verify-release.sh --release R5` passes.
+
+**Global UI/UX conventions (binding on every R5 screen):**
+
+1. **Server-authoritative rendering** — the browser renders governed state only: no
+   formulas, rates, totals, or authority live in the client; money renders through
+   the existing decimal-string `MoneyText` component, never a JSON number.
+2. **Governance labels everywhere** — every governed surface shows the status slots:
+   version/revision, freshness (`asOf` UTC), certification, owner, and state —
+   extending the existing `StatusSlot`/badge system per console.
+3. **Entitlements fail visible** — restricted entities are denied with an explicit
+   label, never silently filtered; an empty scope renders an explicit empty state,
+   never a wildcard.
+4. **Named-human actions only** — every mutating control drives the governed server
+   flow (Idempotency-Key on mutations; `If-Match` on revision-guarded edits);
+   no timer-driven or automatic action appears in any UI.
+5. **Accessibility** — WCAG 2.2 AA: keyboard-operable tables/timelines/graphs,
+   visible focus, 200%-zoom reflow without horizontal scrolling, axe-clean
+   (zero critical/serious), 384px reachability for read journeys.
+6. **Navigation IA** — the shell grows from three tabs to five groups:
+   **Submissions · Reports · Planning · Treasury · Administration**, each a
+   skip-link-reachable landmark with an in-page sub-nav that reflows vertically at
+   200% zoom; no screen is more than two hops from the shell root.
+7. **No new heavy dependencies** — charts and graphs render through a
+   dependency-free SVG component fed by server-computed decimal-string series.
+
+### Task 58: Administration console and O-B8 shell wiring
+
+**Files:**
+- Modify: `apps/finance-web/src/app/AppShell.tsx`
+- Create: `apps/finance-web/src/features/admin/`
+- Modify: `apps/finance-web/src/features/{master-data,source-contracts,load-evidence,kpi-catalog,cases}/`
+- Create: `services/finance-admin/src/main/java/.../masterdata/api/`, `services/finance-admin/src/main/java/.../cases/api/`
+- Create: `services/finance-integration/src/main/java/.../contracts/api/`, `services/finance-integration/src/main/java/.../landing/api/`
+- Create: `services/finance-reporting/src/main/java/.../semantic/api/`
+- Modify: `apps/finance-web/src/api/` (generated types + client)
+- Create: `tests/e2e/admin/console.spec.ts`
+
+**Requirements / dependencies:** F-001/F-002/F-005/F-008/F-034 browser journeys (AC-F-001-01–03 completes the Task 9 PARTIAL), NFR-013–NFR-015, NFR-025–NFR-026, O-B8; depends on Tasks 8–14, 47.
+
+**Screens and UI/UX:**
+
+| Screen | Layout and components | Key states | Actions (all governed) |
+|---|---|---|---|
+| Administration home | Console landing: card grid, one card per console, each with certification/freshness slots | loading · empty · denied | navigate |
+| Master Data | Two-pane: entity/hierarchy list (left) · effective-dated version timeline (vertical, from-inclusive markers, adjacent-boundary sharing visible) + old/new compare table + cycle warning banner (right) | loading · empty · denied · blocked-cycle | Propose (dialog, reason required) · Compare · Activate (independent approver) · Roll back (creates a new version) |
+| Source Contracts | Register table (owner, grain, cadence, precedence, status) + version-diff drawer | as above | Open version · Deprecate (governed transition) |
+| Load Evidence | Batch table (content hash, counts, run status, correlation) + evidence drawer with hash-verified retrieval | as above | Inspect · Export evidence (via the governed export flow) |
+| KPI Catalog | Card grid: formula, unit, grain, owner, version, certification badge; detail view with worked example | as above | Propose card · Certify (four-eyes) |
+| Exception Cases | Queue table (severity, state, owner, ageing) + case detail with immutable transition history and advisory-timer chips (remind/escalate only) | as above | Triage · Assign · Resolve · Approve · Verify · Close |
+
+**Functional build details:**
+
+- REST resources (all inherit the API conventions — problem+json, correlation,
+  server-side entitlement checks; reads entitlement-filtered, mutations
+  idempotency-keyed, governed edits If-Match):
+  - `GET /api/v1/admin/master-data/entities` · `GET …/entities/{id}/versions` ·
+    `POST …/entities/{id}/proposals` · `POST …/hierarchies/{id}/activations`
+  - `GET /api/v1/admin/cases` · `GET …/cases/{id}` · `POST …/cases/{id}/transitions`
+  - `GET /api/v1/integration/contracts` · `GET …/contracts/{id}/versions` ·
+    `GET /api/v1/integration/landing/batches` · `GET …/batches/{id}/evidence`
+  - `GET /api/v1/reporting/kpi-catalog/cards` · `GET …/cards/{kpiId}` ·
+    `POST …/cards` (propose) · `POST …/cards/{kpiId}/certification`
+- Wire the existing `MasterDataService`, `CaseService`, `SourceContractService`,
+  `LandingService`, and `KpiCatalogService` — no new domain logic.
+
+- [ ] Expand the shell IA to the five nav groups with sub-nav landmarks, skip links, 200%-zoom reflow, and an axe-clean navigation e2e.
+- [ ] Expose the governed REST resources above with contract tests for every endpoint: happy paths, denial paths (unentitled actor), stale-If-Match, idempotent replay, and problem+json negatives.
+- [ ] Replace the five shells with data-wired screens implementing the layouts above, generated API types refreshed and zod-validated in the client.
+- [ ] Write e2e journeys: steward proposes and activates a hierarchy version (with overlap refusal), contract deprecation, hash-verified evidence inspection, KPI four-eyes certification, and case triage→closure — each exercising denial, stale-ETag, and replay paths.
+- [ ] Close O-B8 in the records: update the Task 9/12/14 PARTIAL results, the coverage-matrix owning tasks, and `requirements-traceability.csv` task mappings (216 requirement IDs unchanged).
+
+**Done when:** all five consoles are live and entitlement-gated end to end, AC-F-001 browser journeys pass, and O-B8 is closed in every record that tracks it.  
+**Commit:** `feat(console): wire administration console and close O-B8`
+
+### Task 59: Treasury cockpit
+
+**Files:**
+- Create: `apps/finance-web/src/features/treasury-cockpit/`
+- Create: `services/finance-core/src/main/java/.../treasury/api/`
+- Create: `apps/finance-web/src/components/SeriesChart.tsx`
+- Create: `tests/e2e/treasury/cockpit.spec.ts`
+- Create: `services/finance-core/src/test/java/.../treasury/api/`
+
+**Requirements / dependencies:** F-016–F-021 browser surfaces, F-013 drill, NFR-013–NFR-015, NFR-025–NFR-026; depends on Tasks 22–27, 45, 47.
+
+**Screens and UI/UX** (one cockpit, six sections, sub-nav anchors):
+
+| Section | Layout and components | Key states | Actions |
+|---|---|---|---|
+| Cash Today | Hero figure (certified total) + group/entity breakdown table; certification and freshness slots; drill links | loading · empty · denied · uncertified-flagged | Drill to entity grain · Reproduce |
+| Cutoff Board | Day timeline with T0 marker; per-entity submission-state chips (on-time/late/missing governed) | as above | Open day detail |
+| Covenant Dashboard | Status card per covenant with server-computed threshold position; alert badge links the covenant-alert runbook | as above · breached | View calculation trace |
+| Forecast | Version-compare line chart (`SeriesChart`, server-computed decimal-string series) + assumption list | as above | Compare versions · View trace |
+| Funding Headroom | Facilities/utilization table + headroom figure | as above | — |
+| Intercompany Matching | Matched-pairs table + mismatch-case queue (owner, difference, ageing) | as above | Open case |
+
+**Functional build details:**
+
+- Read-only endpoints on finance-core (treasury actions stay in their existing
+  governed flows — the cockpit never mutates):
+  `GET /api/v1/core/treasury/cash-position?date=` · `…/calendar/{date}` ·
+  `…/covenants?date=` · `…/forecast/{version}` · `…/headroom?date=` ·
+  `…/intercompany/matches?date=` — each entitlement-filtered with per-row denial
+  labels, correlation, and problem+json negatives.
+- `SeriesChart` is dependency-free SVG: accepts server-computed series (labels +
+  decimal-string points), renders accessible line/bar with table fallback
+  (`role="img"` + aria summary + data table), keyboard-navigable points.
+
+- [ ] Expose the six read-only treasury endpoints with contract tests (denial, uncertified scope, empty day, late/missing governed states).
+- [ ] Build the cockpit sections with the governed labels, drill links, and the accessible `SeriesChart` component.
+- [ ] Write e2e journeys: cash drill reconciles to its KPI total, restricted-entity denial is visible, cutoff states render correctly, forecast version compare, covenant alert links the runbook, 200%-zoom reflow.
+- [ ] Add a cockpit performance-shape test (bounded section sizes, governed pagination on large entity lists).
+- [ ] Update the coverage matrix and traceability CSV so F-016–F-021 gain the browser-surface task mapping.
+
+**Done when:** treasury users see daily certified cash through intercompany status in one accessible cockpit, every figure certified or explicitly flagged, and drill reconciles exactly.  
+**Commit:** `feat(console): deliver treasury cockpit`
+
+### Task 60: Access and entitlement administration
+
+**Files:**
+- Create: `apps/finance-web/src/features/access-admin/`
+- Modify: `services/finance-admin/src/main/java/.../authorization/` (read resources)
+- Create: `tests/e2e/admin/access.spec.ts`
+
+**Requirements / dependencies:** F-039 browser journeys, F-037 views, NFR-013–NFR-015; depends on Tasks 8, 30.
+
+**Screens and UI/UX:**
+
+| Screen | Layout and components | Key states | Actions |
+|---|---|---|---|
+| Entitlement Matrix | Policy/permission table (role × object × action) with allow/deny chips and effective scope | loading · denied | Open access review |
+| SoD Constraints | Constraint list with conflict examples | as above | — |
+| Access Reviews | Period list + decisions per user (approve/revoke with reason) | as above | Open period · Record decision (Idempotency-Key) |
+| Delegations | Time-boxed delegation table with expiry state | as above · expired | — |
+| Break-Glass Sessions | Session list with ALWAYS-DENIED financial-authority indicator and audit links | as above | — (view-only by design) |
+
+**Functional build details:** `authorize`/`entitlements`/`access-reviews` endpoints
+already exist; add read resources `GET /api/v1/admin/entitlement-matrix` ·
+`GET …/sod-constraints` · `GET …/delegations` · `GET …/break-glass-sessions`
+(entitlement-filtered, correlation, problem+json). Decision recording reuses the
+existing POST with Idempotency-Key; break-glass remains view-only in the browser.
+
+- [ ] Add the four read resources with contract tests and denial negatives.
+- [ ] Build the five screens with governed labels and the always-denied break-glass indicator.
+- [ ] Write e2e journeys: matrix browse, review decision with replay/stale paths, delegation expiry state, break-glass view-only assertion, 200% reflow.
+- [ ] Update traceability mappings for F-039/F-037 browser surfaces.
+
+**Done when:** administrators govern access entirely from the browser with every decision idempotent and auditable, and break-glass remains visibly non-authoritative.  
+**Commit:** `feat(console): add access and entitlement administration`
+
+### Task 61: Trust console — audit explorer, reconciliation, and certification
+
+**Files:**
+- Create: `apps/finance-web/src/features/trust-console/`
+- Create: `services/finance-core/src/main/java/.../api/AuditResource.java`, `.../api/RevisionResource.java`
+- Modify: `services/finance-core/src/main/java/.../certification/` (read resource)
+- Create: `tests/e2e/admin/trust.spec.ts`
+
+**Requirements / dependencies:** F-010 browser journeys, F-007 views, NFR-013–NFR-015; depends on Tasks 5, 11, 20.
+
+**Screens and UI/UX:**
+
+| Screen | Layout and components | Key states | Actions |
+|---|---|---|---|
+| Revision Explorer | Object search → vertical revision timeline (actor, reason, UTC per entry) + side-by-side old/new diff viewer + correlation links | loading · empty · denied | Open audit trail · Follow correlation |
+| Reconciliation Console | Statement table: source vs loaded vs transformed totals, difference, tolerance outcome chips (within/at/beyond) | as above · blocked | Open blocked item · Export statement (governed export) |
+| Certification Ledger | Certification rows (object, stable id, revision, certifier, evidence bundle) + refusal evidence viewer (REQUIRES_NEW writer output) | as above | Inspect refusal evidence |
+
+**Functional build details:** read-only endpoints
+`GET /api/v1/core/revisions/{objectType}/{stableId}` ·
+`GET /api/v1/core/audit?correlationId=&objectType=&stableId=` ·
+`GET /api/v1/core/reconciliations/{run}` · `GET …/certifications?stableId=` —
+immutable sources only; the console mutates nothing.
+
+- [ ] Expose the four read-only endpoints with contract tests (denial, not-found, correlation propagation).
+- [ ] Build the three screens: timeline, diff viewer, tolerance chips, refusal-evidence viewer.
+- [ ] Write e2e journeys: revision timeline walk with diff, correlation follow-through, blocked reconciliation visibility, refusal evidence inspection, 200% reflow.
+- [ ] Update traceability mappings for F-010/F-007 browser surfaces.
+
+**Done when:** auditors and controllers can walk any object's full revision and audit history and see the trust gate's evidence without a database client.  
+**Commit:** `feat(console): add trust console for audit and certification`
+
+### Task 62: Operations consoles — jobs, migration, and lineage
+
+**Files:**
+- Create: `apps/finance-web/src/features/ops/`
+- Create: `services/finance-integration/src/main/java/.../jobs/api/`, `.../migration/api/`
+- Modify: `services/finance-reporting/src/main/java/.../lineage/` (read resource)
+- Create: `apps/finance-web/src/components/LineageGraph.tsx`
+- Create: `tests/e2e/admin/ops.spec.ts`
+
+**Requirements / dependencies:** F-003 job visibility, F-009 lineage browser, F-042 migration views, NFR-013–NFR-015; depends on Tasks 6, 17, 21, 33, 46.
+
+**Screens and UI/UX:**
+
+| Screen | Layout and components | Key states | Actions |
+|---|---|---|---|
+| Job Monitor | Durable-job queue table: type, status chips (QUEUED/RUNNING/SUCCEEDED/FAILED), progress, claim guard, correlation | loading · empty · denied | Inspect (no cancel button by design — jobs are claim-guarded) |
+| Migration & Cutover | Register rows (class, control totals, cutoff, replay identity) + batch table with totals-actual vs expected + **read-only** cutover-phase indicator (freeze/verify/cutover/rollback) | as above · out-of-tolerance | — (freeze/cutover/rollback remain script-governed named-human acts — deliberately no buttons) |
+| Lineage Viewer | Layered DAG (`LineageGraph`, dependency-free SVG): source → landing → validation → certified product; freshness/watermark badge | as above · stale | Expand downstream · Open rebuild runbook (the rebuild itself stays a script) |
+
+**Functional build details:** read-only endpoints
+`GET /api/v1/integration/jobs?status=` ·
+`GET /api/v1/integration/migration/register` · `GET …/migration/batches` ·
+`GET /api/v1/reporting/lineage/graph?root={objectType}/{stableId}` (nodes + edges +
+freshness). `LineageGraph` mirrors `SeriesChart` accessibility: aria summary,
+keyboard-navigable nodes, table fallback.
+
+- [ ] Expose the four read-only endpoints with contract tests and denial negatives.
+- [ ] Build the three screens including the accessible DAG component and the read-only cutover-phase indicator.
+- [ ] Write e2e journeys: queue browse with FAILED visibility, register/batch totals with out-of-tolerance state, lineage expand + staleness badge, no-cutover-button assertion (F-044 posture), 200% reflow.
+- [ ] Update traceability mappings for F-003/F-009/F-042 browser surfaces.
+
+**Done when:** operators see queue health, migration posture, and lineage freshness in the browser while every consequential operations action remains a governed script act.  
+**Commit:** `feat(console): add jobs migration and lineage consoles`
+
+### Task 63: R5 acceptance gate
+
+**Files:**
+- Create: `docs/operations/r5-build-status.md`
+- Create: `docs/operations/r5-evidence-pack.md`
+- Modify: `scripts/quality/verify-release.sh` (R5 case)
+
+**Requirements / dependencies:** R5 exit, browser journeys for F-001/F-002/F-005/F-007/F-008/F-009/F-010/F-016–F-021/F-034/F-037/F-039/F-042; depends on Tasks 58–62 and all prior gates.
+
+- [ ] Run full regression: reactor `./mvnw verify`, frontend typecheck/eslint/vitest/build, complete e2e suite (existing + all R5 journeys), platform smoke, and every quality/operations gate R0–R5.
+- [ ] Verify accessibility across all twelve new screens: axe scans (zero critical/serious), keyboard journeys, 200%-zoom reflow, 384px read-journey reachability.
+- [ ] Extend `verify-release.sh --release R5`: r5-build-status rows for Tasks 58–62, evidence-pack sections (Regression evidence / Quality gates / Platform evidence / Recovery rehearsal / Exclusions and boundaries / Open items), and the R5 sub-gates.
+- [ ] Update the Requirement Coverage Matrix and `requirements-traceability.csv` owning tasks for every R5 browser surface (216 requirement IDs unchanged; AC rows gain task mappings only).
+- [ ] Deliver `r5-evidence-pack.md` with the twelve-screen inventory, per-screen e2e/gate evidence, and the owner sign-off block; record any deferred surface with a signed exception.
+
+**Done when:** all twelve screens are live, accessible, verified, and mapped; R5 gate passes; sign-offs are tracked with owners (human acts, never claimed).  
+**Commit:** `test(release): certify r5 experience completion`
+
+---
+
 # Requirement Coverage Matrix
 
 The matrices are execution controls, not informational appendices. Update the owning task and `docs/operations/requirements-traceability.csv` together. A checked task requires attached test output and named review evidence.
